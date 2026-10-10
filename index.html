@@ -1,0 +1,1703 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data:; connect-src https://api.openai.com https://generativelanguage.googleapis.com https://api.anthropic.com; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#EBEFF3">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0D131A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="תיעוד">
+<title>עוזר תיעוד רפואי</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Crect width='36' height='36' rx='8' fill='%2315202C'/%3E%3Cpath d='M5 18c3.4-5.6 7.8-8.4 13-8.4s9.6 2.8 13 8.4c-3.4 5.6-7.8 8.4-13 8.4S8.4 23.6 5 18z' fill='none' stroke='%23fff' stroke-width='2'/%3E%3Ccircle cx='18' cy='18' r='5.2' fill='%23EF9F2F'/%3E%3Ccircle cx='18' cy='18' r='2.2' fill='%2315202C'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Hebrew:wght@400;500;600;700&family=Secular+One&display=swap">
+<style>
+:root {
+  /* Layout: a one-column run sheet. Stepper on top, one card per documentation
+     section, and an action bar pinned to the bottom within thumb reach. */
+  --bg: #EBEFF3;
+  --surface: #FFFFFF;
+  --surface-2: #F3F5F8;
+  --ink: #15202C;
+  --muted: #566376;
+  --line: #D1D8E1;
+  --accent: #EF9F2F;
+  --accent-ink: #8A4B00;
+  --accent-soft: #FCEBD1;
+  --on-accent: #1E1405;
+  --ok: #1B7A4A;
+  --danger: #B3261E;
+  --danger-soft: #FCE8E6;
+  --focus: #2F6FDE;
+  --skel: #E1E6EC;
+  --bar-bg: rgba(235, 239, 243, 0.94);
+  --bar-shadow: 0 -1px 0 rgba(21, 32, 44, 0.08), 0 -10px 28px rgba(21, 32, 44, 0.07);
+  --toast-bg: #15202C;
+  --toast-fg: #FFFFFF;
+  --font-display: "Secular One", "IBM Plex Sans Hebrew", "Segoe UI", Arial, sans-serif;
+  --font-body: "IBM Plex Sans Hebrew", "Segoe UI", "Noto Sans Hebrew", Arial, sans-serif;
+  --font-num: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0D131A;
+    --surface: #151D27;
+    --surface-2: #1B2430;
+    --ink: #E5EAF0;
+    --muted: #93A0B0;
+    --line: #2A3543;
+    --accent: #F2A73C;
+    --accent-ink: #F6BD69;
+    --accent-soft: #3A2A12;
+    --on-accent: #1E1405;
+    --ok: #4CC38A;
+    --danger: #FF8B80;
+    --danger-soft: #3A1D1B;
+    --focus: #7EA9FF;
+    --skel: #222C39;
+    --bar-bg: rgba(13, 19, 26, 0.94);
+    --bar-shadow: 0 -1px 0 rgba(0, 0, 0, 0.5), 0 -10px 28px rgba(0, 0, 0, 0.35);
+    --toast-bg: #E5EAF0;
+    --toast-fg: #0D131A;
+    color-scheme: dark;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 var(--font-body); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: var(--accent-ink); }
+[hidden] { display: none !important; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+#app { max-width: 680px; margin: 0 auto; padding-inline: 16px; padding-block: calc(10px + env(safe-area-inset-top, 0px)) calc(116px + env(safe-area-inset-bottom, 0px)); }
+main { display: flex; flex-direction: column; gap: 12px; }
+.step-panel, .panel { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+
+/* Header */
+.top { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 10px; }
+.brand { display: flex; align-items: center; gap: 10px; flex: 1 1 auto; min-width: 0; }
+.mark { width: 34px; height: 34px; flex: none; }
+.mark .lid { fill: none; stroke: var(--ink); stroke-width: 2; }
+.mark .iris { fill: var(--accent); }
+.mark .pupil { fill: var(--ink); }
+.mark .glint { fill: var(--surface); }
+h1 { margin: 0; font: 400 22px/1.15 var(--font-display); text-wrap: balance; }
+.top-actions { display: flex; gap: 6px; margin-inline-start: auto; }
+.pill { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 4px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font: 500 13.5px/1.2 var(--font-body); }
+.pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.pill.on .dot { background: var(--ok); }
+.pill.armed, .btn.armed, .link.armed { border-color: var(--danger); color: var(--danger); }
+.tagline { margin: 4px 0 12px; font-size: 13.5px; color: var(--muted); }
+
+/* Stepper */
+.stepper ol { list-style: none; margin: 0 0 12px; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.stepper button { width: 100%; min-height: 44px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--muted); font: 500 14px/1.2 var(--font-body); text-align: start; }
+.stepper .n { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); color: var(--muted); font: 400 14px/1 var(--font-display); }
+.stepper button.done .n { background: var(--ok); color: var(--surface); }
+.stepper button[aria-current="step"] { border-color: var(--accent); background: var(--accent-soft); color: var(--ink); }
+.stepper button[aria-current="step"] .n { background: var(--accent); color: var(--on-accent); }
+.stepper button:disabled { opacity: 0.5; cursor: default; }
+body.in-settings .stepper, body.in-settings .step-panel, body.in-settings .actionbar { display: none !important; }
+
+/* Cards and text */
+.card { display: flex; flex-direction: column; gap: 14px; min-width: 0; padding: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+h2 { margin: 0; font: 400 18px/1.25 var(--font-display); text-wrap: balance; }
+h2 label { cursor: inherit; }
+.h2row { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; }
+.lbl { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 600; color: var(--muted); }
+.fine { margin: 0; font-size: 13px; color: var(--muted); }
+.notice { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 12px 14px; border: 1px dashed var(--line); border-radius: 12px; background: var(--surface); font-size: 14px; }
+
+/* Form fields */
+.field { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); color: var(--ink); font: 16px/1.5 var(--font-body); }
+.field::placeholder { color: var(--muted); opacity: 0.85; }
+.field:focus { outline: 2px solid var(--focus); outline-offset: 1px; border-color: transparent; }
+textarea.field { display: block; resize: none; overflow: hidden; }
+select.field { padding-block: 8px; }
+.row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.age-row { display: flex; gap: 8px; }
+.age-row .num { flex: 1 1 0; min-width: 0; text-align: center; font-family: var(--font-num); }
+.age-row select { flex: 1.4 1 0; min-width: 0; }
+@media (max-width: 380px) { .row2 { grid-template-columns: minmax(0, 1fr); } }
+
+/* Chips */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 6px 13px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-2); color: var(--ink); font: 500 15px/1.25 var(--font-body); text-align: start; -webkit-tap-highlight-color: transparent; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.chip[aria-pressed="true"]::before { content: "✓"; font-weight: 700; }
+.seg { display: flex; gap: 8px; }
+.seg .chip { flex: 1 1 0; justify-content: center; }
+.chip.miss { border-style: dashed; background: transparent; }
+
+/* First line preview */
+.firstline { padding-top: 12px; border-top: 1px dashed var(--line); }
+.firstline-text { display: block; font-size: 17px; font-weight: 600; }
+.firstline-text.empty { font-size: 15px; font-weight: 400; color: var(--muted); }
+
+/* Links and buttons */
+.link { min-height: 36px; padding: 6px 2px; border: 0; background: none; color: var(--accent-ink); font: 600 14px/1.3 var(--font-body); text-decoration: underline; text-underline-offset: 3px; text-align: start; }
+.link.quiet { color: var(--muted); font-weight: 500; }
+.link.danger { color: var(--danger); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; padding: 0 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font: 600 16px/1.2 var(--font-body); }
+.btn.primary { flex: 1 1 auto; background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn.small { min-height: 40px; padding: 0 14px; font-size: 14px; }
+.btn:disabled { opacity: 0.5; cursor: default; }
+
+/* Step 2 */
+.qtop { display: flex; flex-direction: column; gap: 8px; }
+.qmeta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; min-height: 28px; }
+.case-chip { padding: 3px 10px; border-radius: 6px; background: var(--ink); color: var(--surface); font: 400 15px/1.4 var(--font-display); }
+.progress { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+#qRegen { margin-inline-start: auto; }
+.qs { display: flex; flex-direction: column; gap: 6px; }
+.q { display: flex; flex-direction: column; gap: 8px; margin-inline: -8px; padding: 8px; border-radius: 10px; scroll-margin-block: 24px 140px; }
+.q-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; }
+.q-dot { flex: none; width: 10px; height: 10px; border: 2px solid var(--muted); border-radius: 50%; }
+.q.answered .q-dot { background: var(--ok); border-color: var(--ok); }
+.q-label { font-weight: 600; }
+.q-hint { font-size: 13px; color: var(--muted); }
+.num-row { display: flex; align-items: center; gap: 8px; }
+.num-row .field { width: 8em; text-align: center; font-family: var(--font-num); }
+.unit { font-size: 14px; color: var(--muted); }
+.q.enter { animation: enter 0.3s ease-out both; }
+.q.flash { animation: flash 1.6s ease-out; }
+.card.flash { animation: flash-card 1.6s ease-out; }
+@keyframes enter { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@keyframes flash { from { background: var(--accent-soft); } to { background: transparent; } }
+@keyframes flash-card { from { background: var(--accent-soft); } to { background: var(--surface); } }
+
+/* Vitals */
+.vsets { display: flex; flex-direction: column; gap: 14px; }
+.vset { display: flex; flex-direction: column; gap: 10px; }
+.vset + .vset { padding-top: 14px; border-top: 1px dashed var(--line); }
+.vset-head { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; }
+.vset-title { font-weight: 600; }
+.vtime { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.field.time { width: auto; min-height: 36px; padding: 4px 8px; font-family: var(--font-num); font-size: 16px; }
+.vitals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+@media (min-width: 560px) { .vitals { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.vital { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); }
+.vital:focus-within { border-color: var(--focus); }
+.vital.odd { border-color: var(--danger); }
+.vital-top { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; }
+.vital-name { font-size: 13px; font-weight: 600; color: var(--muted); }
+.vital-unit { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+.vital input { width: 100%; min-width: 0; padding: 2px 0; border: 0; background: transparent; color: var(--ink); font: 600 22px/1.25 var(--font-num); text-align: center; }
+.vital input:focus { outline: none; }
+.bp { display: flex; align-items: center; gap: 2px; }
+.bp span { color: var(--muted); font: 600 20px/1 var(--font-num); }
+.odd-note { font-size: 11.5px; color: var(--danger); }
+
+/* Disposition */
+.sub { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px dashed var(--line); border-radius: 10px; background: var(--surface-2); }
+.sub.alert { border-color: var(--accent); background: var(--accent-soft); }
+
+/* Status lines */
+.status { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font-size: 14px; }
+.status.error { border-color: var(--danger); background: var(--danger-soft); }
+.status.ok { border-color: var(--ok); }
+.status-text { display: flex; flex-direction: column; gap: 2px; flex: 1 1 200px; min-width: 0; }
+.status-detail { font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+.spin { flex: none; width: 18px; height: 18px; border: 2.5px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.skel i { display: block; height: 14px; border-radius: 6px; background: var(--skel); animation: pulse 1.2s ease-in-out infinite; }
+.skel i:nth-child(1) { width: 35%; height: 18px; }
+.skel i:nth-child(2) { width: 85%; }
+.skel i:nth-child(3) { width: 70%; }
+.skel i:nth-child(4) { width: 55%; }
+@keyframes pulse { 50% { opacity: 0.45; } }
+
+/* Step 3 */
+.report-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.report-tools .seg { flex: 1 1 260px; }
+.field.report { min-height: 260px; background: var(--surface); line-height: 1.75; }
+.field.report.busy { opacity: 0.55; }
+.missing h2 { font-size: 16px; }
+.allgood { margin: 0; color: var(--ok); font-weight: 600; }
+
+/* Settings */
+.provider-note { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: 10px; background: var(--surface-2); font-size: 13.5px; }
+.provider-note p { margin: 0; }
+.row-btns { display: flex; flex-wrap: wrap; gap: 10px; }
+.row-btns .btn { flex: 1 1 140px; }
+
+/* Action bar and toast */
+.actionbar { position: fixed; inset-inline: 0; bottom: 0; z-index: 10; padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); background: var(--bar-bg); box-shadow: var(--bar-shadow); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.bar-in { max-width: 648px; margin: 0 auto; display: flex; flex-direction: column; gap: 6px; }
+.bar-row { display: flex; gap: 10px; }
+.bar-msg { margin: 0; font-size: 14px; font-weight: 600; color: var(--danger); text-align: center; }
+.toast { position: fixed; inset-inline: 16px; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); z-index: 20; max-width: 440px; margin-inline: auto; padding: 12px 16px; border-radius: 12px; background: var(--toast-bg); color: var(--toast-fg); font-size: 14px; text-align: center; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 36 36" aria-hidden="true">
+        <path class="lid" d="M4 18c3.6-5.9 8.3-8.9 14-8.9s10.4 3 14 8.9c-3.6 5.9-8.3 8.9-14 8.9S7.6 23.9 4 18z"/>
+        <circle class="iris" cx="18" cy="18" r="5.6"/>
+        <circle class="pupil" cx="18" cy="18" r="2.4"/>
+        <circle class="glint" cx="20" cy="16" r="1"/>
+      </svg>
+      <h1>עוזר תיעוד רפואי</h1>
+    </div>
+    <div class="top-actions">
+      <button type="button" class="pill" id="aiChip" aria-label="הגדרות AI"><span class="dot" aria-hidden="true"></span><span id="aiChipText">בלי AI</span></button>
+      <button type="button" class="pill" id="newCase">מקרה חדש</button>
+    </div>
+  </header>
+  <p class="tagline">כדי שכל מה שנבדק ונעשה באירוע ייכנס לתיעוד.</p>
+
+  <nav class="stepper" aria-label="שלבים">
+    <ol>
+      <li><button type="button" data-go="1"><span class="n">1</span><span>המקרה</span></button></li>
+      <li><button type="button" data-go="2"><span class="n">2</span><span>השלמות</span></button></li>
+      <li><button type="button" data-go="3"><span class="n">3</span><span>טקסט לטופס</span></button></li>
+    </ol>
+  </nav>
+
+  <main>
+    <section class="step-panel" data-step="1">
+      <div class="notice" id="aiNotice" hidden>
+        <span>לא הוגדר AI, ולכן השאלות יהיו כלליות והטקסט יורכב ישירות מהתשובות.</span>
+        <button type="button" class="link" data-open-settings>הגדרת AI</button>
+      </div>
+
+      <div class="card">
+        <h2>המטופל</h2>
+        <div class="row2">
+          <div>
+            <span class="lbl" id="sexLbl">מין</span>
+            <div class="seg" id="sexSeg" role="group" aria-labelledby="sexLbl">
+              <button type="button" class="chip" data-sex="בן" aria-pressed="false">בן</button>
+              <button type="button" class="chip" data-sex="בת" aria-pressed="false">בת</button>
+            </div>
+          </div>
+          <div>
+            <label class="lbl" for="age">גיל</label>
+            <div class="age-row">
+              <input id="age" class="field num" type="text" inputmode="numeric" dir="ltr" maxlength="3" autocomplete="off">
+              <select id="ageUnit" class="field" aria-label="יחידת גיל">
+                <option value="שנים">שנים</option>
+                <option value="חודשים">חודשים</option>
+                <option value="ימים">ימים</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div>
+          <span class="lbl" id="bgLbl">רקע רפואי</span>
+          <div class="chips" id="bgChips" role="group" aria-labelledby="bgLbl"></div>
+        </div>
+        <input id="bgExtra" class="field" type="text" autocomplete="off" placeholder="רקע נוסף: מחלות, תרופות קבועות" aria-label="רקע נוסף">
+        <div class="firstline">
+          <span class="lbl">השורה הראשונה בטופס</span>
+          <output id="firstLine" class="firstline-text" aria-live="polite"></output>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="h2row">
+          <h2><label for="story">מה קרה</label></h2>
+          <button type="button" class="link" id="example">מילוי דוגמה</button>
+        </div>
+        <textarea id="story" class="field" rows="4" placeholder="לדוגמה: נפגע בראש מאבן, חתך מדמם במצח, בהכרה מלאה, אביו במקום"></textarea>
+        <p class="fine">אפשר להכתיב בעזרת המיקרופון שבמקלדת. לא לכתוב שם, ת״ז, כתובת או טלפון של המטופל.</p>
+      </div>
+    </section>
+
+    <section class="step-panel" data-step="2" hidden>
+      <div class="qtop">
+        <div class="qmeta">
+          <span class="case-chip" id="caseChip" hidden></span>
+          <span class="progress" id="qProgress"></span>
+          <button type="button" class="link" id="qRegen" hidden>שאלות חדשות</button>
+        </div>
+        <div class="status" id="qStatus" role="status" aria-live="polite" hidden></div>
+        <p class="fine">שאלה שנשארת ריקה לא תיכתב בתיעוד. מסמנים רק מה שנבדק או בוצע בפועל.</p>
+      </div>
+      <div id="qroot" class="step-panel">
+        <div class="card skel" id="qSkel" hidden aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        <section class="card qsec" id="sec-hx" hidden><h2>אנמנזה</h2><div class="qs"></div></section>
+        <section class="card qsec" id="sec-exam" hidden><h2>בדיקה</h2><div class="qs"></div></section>
+        <section class="card" id="sec-vitals">
+          <div class="h2row"><h2>מדדים</h2><span class="fine">משאירים ריק מה שלא נמדד</span></div>
+          <div id="vitalsSets" class="vsets"></div>
+          <button type="button" class="link" id="addVitals">+ סט מדדים חוזרים</button>
+        </section>
+        <section class="card qsec" id="sec-tx" hidden><h2>טיפול</h2><div class="qs"></div></section>
+        <section class="card qsec" id="sec-more" hidden><h2>נוסף</h2><div class="qs"></div></section>
+        <section class="card" id="sec-dispo">
+          <h2>סיום האירוע</h2>
+          <div class="chips" id="dispoChips" role="group" aria-label="סיום האירוע"></div>
+          <div id="destWrap" hidden>
+            <label class="lbl" for="dest">בית החולים</label>
+            <input id="dest" class="field" type="text" autocomplete="off" placeholder="לדוגמה: שערי צדק">
+          </div>
+          <input id="dispoOther" class="field" type="text" autocomplete="off" placeholder="פירוט" aria-label="סיום האירוע, פירוט" hidden>
+          <div class="sub alert" id="refusalWrap" hidden>
+            <span class="lbl" id="refLbl">סירוב לפינוי: מה נעשה</span>
+            <div class="chips" id="refusalChips" role="group" aria-labelledby="refLbl"></div>
+          </div>
+          <div>
+            <span class="lbl" id="endLbl">מצב בסיום הטיפול</span>
+            <div class="chips" id="endChips" role="group" aria-labelledby="endLbl"></div>
+          </div>
+        </section>
+        <section class="card" id="sec-notes">
+          <h2><label for="notes">פרטים נוספים</label></h2>
+          <textarea id="notes" class="field" rows="2" placeholder="כל דבר נוסף שחשוב שייכתב, למשל נוכחות משטרה או מי נשאר עם המטופל"></textarea>
+        </section>
+      </div>
+    </section>
+
+    <section class="step-panel" data-step="3" hidden>
+      <div class="report-tools">
+        <div class="seg" id="styleSeg" role="group" aria-label="סגנון הטקסט">
+          <button type="button" class="chip" data-style="lines" aria-pressed="true">שורות לפי נושא</button>
+          <button type="button" class="chip" data-style="paragraph" aria-pressed="false">פסקה רציפה</button>
+        </div>
+        <button type="button" class="btn small" id="rRegen">ניסוח מחדש</button>
+      </div>
+      <div class="status" id="rStatus" role="status" aria-live="polite" hidden></div>
+      <textarea id="report" class="field report" spellcheck="false" aria-label="הטקסט לתיעוד" placeholder="הטקסט יופיע כאן"></textarea>
+      <p class="fine">יש לקרוא את הטקסט לפני ההדבקה בטופס. האחריות על התיעוד נשארת שלך.</p>
+      <div class="card missing" id="missing"></div>
+    </section>
+
+    <section class="panel" id="settings" hidden>
+      <div class="card">
+        <div class="h2row">
+          <h2>הגדרות AI</h2>
+          <button type="button" class="link" id="setClose">סגירה</button>
+        </div>
+        <p class="fine">הדף עובד גם בלי AI. עם מפתח API מחשבון אישי, השאלות מותאמות לסוג האירוע והטקסט מנוסח בשפה מקצועית.</p>
+        <div>
+          <label class="lbl" for="setProvider">ספק</label>
+          <select id="setProvider" class="field">
+            <option value="">בלי AI</option>
+            <option value="openai">OpenAI</option>
+            <option value="gemini">Google Gemini</option>
+            <option value="anthropic">Anthropic (Claude)</option>
+          </select>
+        </div>
+        <div class="provider-note" id="setNote"></div>
+        <div id="setKeyWrap">
+          <label class="lbl" for="setKey">מפתח API</label>
+          <input id="setKey" class="field" type="password" dir="ltr" autocomplete="off" autocapitalize="off" spellcheck="false">
+        </div>
+        <div id="setModelWrap">
+          <label class="lbl" for="setModel">מודל</label>
+          <input id="setModel" class="field" type="text" dir="ltr" autocomplete="off" autocapitalize="off" spellcheck="false">
+          <p class="fine">אם הספק משנה שמות מודלים, אפשר לעדכן כאן.</p>
+        </div>
+        <div class="row-btns">
+          <button type="button" class="btn" id="setTest">בדיקת חיבור</button>
+          <button type="button" class="btn primary" id="setSave">שמירה</button>
+        </div>
+        <div class="status" id="setStatus" role="status" aria-live="polite" hidden></div>
+        <p class="fine">המפתח נשמר רק בדפדפן של המכשיר הזה ונשלח רק לספק שנבחר. כדאי להגדיר בחשבון אצל הספק תקרת הוצאה חודשית.</p>
+        <button type="button" class="link danger" id="setForget">מחיקת המפתח מהמכשיר</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="actionbar">
+    <div class="bar-in">
+      <p class="bar-msg" id="barMsg" role="alert" hidden></p>
+      <div class="bar-row" data-bar="1">
+        <button type="button" class="btn primary" id="toQuestions">המשך לשאלות <span aria-hidden="true">←</span></button>
+      </div>
+      <div class="bar-row" data-bar="2" hidden>
+        <button type="button" class="btn" data-go="1">חזרה</button>
+        <button type="button" class="btn primary" id="toReport">הפקת טקסט לתיעוד</button>
+      </div>
+      <div class="bar-row" data-bar="3" hidden>
+        <button type="button" class="btn" data-go="2">חזרה לשאלות</button>
+        <button type="button" class="btn primary" id="copyBtn">העתקה</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ---------- DOM helpers ---------- */
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  function h(tag, attrs, ...kids) {
+    const n = document.createElement(tag);
+    if (attrs) {
+      for (const [k, v] of Object.entries(attrs)) {
+        if (v === null || v === undefined || v === false) continue;
+        if (k === 'class') n.className = v;
+        else if (k === 'text') n.textContent = v;
+        else n.setAttribute(k, v === true ? '' : String(v));
+      }
+    }
+    for (const c of kids) if (c !== null && c !== undefined && c !== false) n.append(c);
+    return n;
+  }
+  const toggleIn = (arr, v) => (arr.includes(v) ? arr.filter(x => x !== v) : arr.concat(v));
+  function chip(label, pressed, data) {
+    const b = h('button', { type: 'button', class: 'chip', 'aria-pressed': pressed ? 'true' : 'false', text: label });
+    if (data) for (const [k, v] of Object.entries(data)) b.dataset[k] = v;
+    return b;
+  }
+  function syncPressed(container, isOn) {
+    for (const b of $$('.chip', container)) b.setAttribute('aria-pressed', isOn(b) ? 'true' : 'false');
+  }
+
+  /* ---------- constants ---------- */
+  const DRAFT_KEY = 'ems-doc-draft-v1';
+  const AI_KEY = 'ems-doc-ai-v1';
+  const STYLE_KEY = 'ems-doc-style-v1';
+  const DRAFT_TTL_MS = 12 * 60 * 60 * 1000;
+  const OTHER = '__other';
+  const MAX_QUESTIONS = 20;
+
+  const SECTIONS = [
+    { key: 'hx', name: 'אנמנזה' },
+    { key: 'exam', name: 'בדיקה' },
+    { key: 'tx', name: 'טיפול' },
+    { key: 'more', name: 'נוסף' },
+  ];
+  const KINDS = new Set(['choice', 'multi', 'number', 'text']);
+
+  const BG_CHIPS = ['בריא בדרך כלל', 'רקע לא ידוע', 'יל״ד', 'סוכרת', 'מחלת לב', 'קוצב לב', 'אסטמה', 'COPD', 'אפילפסיה', 'נוגדי קרישה', 'דמנציה', 'הריון'];
+  const BG_EXCLUSIVE = new Set(['בריא בדרך כלל', 'רקע לא ידוע']);
+  const BG_FEMALE_ONLY = new Set(['הריון']);
+
+  const VITALS = [
+    { k: 'hr', name: 'דופק', unit: 'לד״ק' },
+    { k: 'bp', name: 'ל״ד', unit: 'מ״מ כספית' },
+    { k: 'rr', name: 'נשימות', unit: 'לד״ק' },
+    { k: 'spo2', name: 'סטורציה', unit: '%' },
+    { k: 'bgl', name: 'סוכר', unit: 'מ״ג/ד״ל' },
+    { k: 'gcs', name: 'GCS', unit: '3–15' },
+    { k: 'pain', name: 'כאב', unit: '0–10' },
+    { k: 'temp', name: 'חום', unit: '°C', decimal: true },
+  ];
+  // Plausibility ranges only flag likely typos; they never block a value.
+  const RANGES = { hr: [0, 300], sys: [0, 300], dia: [0, 200], rr: [0, 80], spo2: [0, 100], bgl: [0, 1500], gcs: [3, 15], pain: [0, 10], temp: [25, 45] };
+  const INTEGER_ONLY = new Set(['gcs', 'pain']);
+
+  // m / f: label for a male / female patient.
+  const DISPO = [
+    { k: 'hospital', m: 'פונה באמבולנס לבית חולים', f: 'פונתה באמבולנס לבית חולים' },
+    { k: 'mda', m: 'הועבר לצוות מד״א', f: 'הועברה לצוות מד״א' },
+    { k: 'als', m: 'הועבר לצוות ALS / נט״ן', f: 'הועברה לצוות ALS / נט״ן' },
+    { k: 'refused', m: 'סירב לפינוי', f: 'סירבה לפינוי' },
+    { k: 'onsite', m: 'טופל במקום, ללא צורך בפינוי', f: 'טופלה במקום, ללא צורך בפינוי' },
+  ];
+  const REFUSAL = [
+    { k: 'lucid', m: 'צלול ומתמצא', f: 'צלולה ומתמצאת' },
+    { k: 'risks', m: 'הוסברו הסיכונים שבסירוב', f: 'הוסברו הסיכונים שבסירוב' },
+    { k: 'understood', m: 'הבין את ההסבר', f: 'הבינה את ההסבר' },
+    { k: 'signed', m: 'חתם על טופס סירוב', f: 'חתמה על טופס סירוב' },
+    { k: 'nosign', m: 'סירב לחתום', f: 'סירבה לחתום' },
+    { k: 'doctor', m: 'הומלץ לפנות לרופא', f: 'הומלץ לפנות לרופא' },
+    { k: 'callback', m: 'הונחה להזעיק שוב בהחמרה', f: 'הונחתה להזעיק שוב בהחמרה' },
+    { k: 'witness', m: 'בנוכחות בן משפחה או עד', f: 'בנוכחות בן משפחה או עד' },
+  ];
+  const ENDSTATE = [
+    { k: 'stable', m: 'יציב', f: 'יציבה' },
+    { k: 'better', m: 'חל שיפור', f: 'חל שיפור' },
+    { k: 'same', m: 'ללא שינוי', f: 'ללא שינוי' },
+    { k: 'worse', m: 'חלה החמרה', f: 'חלה החמרה' },
+  ];
+
+  // Used when no AI is configured or the AI call fails.
+  const BASIC_QUESTIONS = [
+    { id: 'onset', section: 'hx', q: 'זמן התחלה או האירוע', kind: 'text' },
+    { id: 'mechanism', section: 'hx', q: 'מנגנון ונסיבות', kind: 'text' },
+    { id: 'complaints', section: 'hx', q: 'תלונות', kind: 'text' },
+    { id: 'loc', section: 'hx', q: 'אובדן הכרה', kind: 'choice', options: ['לא', 'כן', 'לא ידוע'] },
+    { id: 'meds', section: 'hx', q: 'תרופות קבועות', kind: 'text' },
+    { id: 'allergies', section: 'hx', q: 'רגישויות', kind: 'choice', options: ['ללא רגישויות ידועות'] },
+    { id: 'avpu', section: 'exam', q: 'מצב הכרה', kind: 'choice', options: ['ער ומתמצא', 'מבולבל', 'מגיב לקול', 'מגיב לכאב', 'לא מגיב'] },
+    { id: 'breathing', section: 'exam', q: 'נתיב אוויר ונשימה', kind: 'choice', options: ['פתוח, נשימה תקינה', 'נשימה מאומצת', 'קולות נשימה חריגים'] },
+    { id: 'pupils', section: 'exam', q: 'מצב אישונים', kind: 'choice', options: ['שווים ומגיבים לאור', 'לא שווים', 'לא מגיבים לאור'] },
+    { id: 'skin', section: 'exam', q: 'מראה העור', kind: 'multi', options: ['ורוד וחם', 'חיוור', 'מזיע', 'כחלוני'] },
+    { id: 'findings', section: 'exam', q: 'ממצאים נוספים בבדיקה', kind: 'text' },
+    { id: 'treatment', section: 'tx', q: 'טיפול שניתן', kind: 'multi', options: ['חמצן', 'עצירת דימום', 'חיטוי', 'חבישה', 'קיבוע', 'צווארון'] },
+    { id: 'response', section: 'tx', q: 'תגובה לטיפול', kind: 'choice', options: ['שיפור', 'ללא שינוי', 'החמרה'] },
+  ];
+
+  const EXAMPLE = {
+    sex: 'בן', age: '15', ageUnit: 'שנים', bg: ['בריא בדרך כלל'], bgExtra: '',
+    story: 'נפגע בראש מאבן שנזרקה לעברו. חתך מדמם במצח מעל הגבה הימנית. בהכרה מלאה, אביו במקום.',
+  };
+
+  const PROVIDERS = {
+    openai: {
+      label: 'OpenAI', short: 'OpenAI', model: 'gpt-5.4-mini', keyHost: 'platform.openai.com/api-keys',
+      note: 'בתשלום לפי שימוש. לפי מדיניות OpenAI, תוכן שנשלח דרך ה-API לא משמש לאימון מודלים כברירת מחדל.',
+    },
+    gemini: {
+      label: 'Google Gemini', short: 'Gemini', model: 'gemini-flash-latest', keyHost: 'aistudio.google.com/apikey',
+      note: 'יש מסלול חינמי, אבל בו Google רשאית להשתמש בתוכן לשיפור המוצרים שלה, כולל קריאה על ידי בודקים. למידע רפואי עדיף להפעיל חיוב בחשבון (Paid tier).',
+    },
+    anthropic: {
+      label: 'Anthropic (Claude)', short: 'Claude', model: 'claude-opus-5-5', keyHost: 'console.anthropic.com/settings/keys',
+      note: 'בתשלום לפי שימוש. מפתח מחשבון אישי, לא מחשבון של העבודה. לפי מדיניות Anthropic, תוכן שנשלח דרך ה-API לא משמש לאימון מודלים כברירת מחדל.',
+    },
+  };
+
+  /* ---------- case state and draft ---------- */
+  const blankVitals = () => ({ time: '', hr: '', sys: '', dia: '', rr: '', spo2: '', bgl: '', gcs: '', pain: '', temp: '' });
+  const blankAnswer = () => ({ sel: [], other: '', value: '' });
+  const blankCase = () => ({
+    step: 1, sex: '', age: '', ageUnit: 'שנים', bg: [], bgExtra: '', story: '',
+    caseType: '', questions: [], answers: {}, qSource: '', qSig: '',
+    vitals: [blankVitals()], dispo: [], dest: '', dispoOther: '', refusal: [], endState: '', notes: '',
+    style: 'lines', report: '', reportSig: '', reportSource: '', reportEdited: false, savedAt: 0,
+  });
+  let S = blankCase();
+  let qCtl = null;
+  let qPendingSig = '';
+  let rCtl = null;
+
+  function saveDraft() {
+    try { S.savedAt = Date.now(); localStorage.setItem(DRAFT_KEY, JSON.stringify(S)); } catch (_) { /* storage unavailable */ }
+  }
+  let saveTimer = 0;
+  function saveSoon() { clearTimeout(saveTimer); saveTimer = setTimeout(saveDraft, 400); }
+  function clearDraft() {
+    clearTimeout(saveTimer);
+    try { localStorage.removeItem(DRAFT_KEY); } catch (_) { /* storage unavailable */ }
+  }
+  function loadDraft() {
+    try {
+      const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
+      if (!d || typeof d !== 'object') return null;
+      if (!(Date.now() - Number(d.savedAt || 0) < DRAFT_TTL_MS)) { clearDraft(); return null; }
+      return d;
+    } catch (_) { return null; }
+  }
+  function restoreCase(d) {
+    const b = blankCase();
+    for (const k of Object.keys(b)) {
+      const v = d[k];
+      if (v === null || v === undefined) continue;
+      if (Array.isArray(v) !== Array.isArray(b[k]) || typeof v !== typeof b[k]) continue;
+      b[k] = v;
+    }
+    b.vitals = (b.vitals.length ? b.vitals : [blankVitals()]).slice(0, 3).map(v => Object.assign(blankVitals(), v));
+    b.questions = b.questions
+      .filter(q => q && q.id && q.q && KINDS.has(q.kind))
+      .map(q => Object.assign({ options: [], unit: '', hint: '', section: 'more' }, q));
+    for (const q of b.questions) {
+      const a = Object.assign(blankAnswer(), b.answers[q.id] && typeof b.answers[q.id] === 'object' ? b.answers[q.id] : {});
+      if (!Array.isArray(a.sel)) a.sel = [];
+      b.answers[q.id] = a;
+    }
+    if (![1, 2, 3].includes(b.step)) b.step = 1;
+    return b;
+  }
+  function loadStylePref() {
+    try { const v = localStorage.getItem(STYLE_KEY); return v === 'lines' || v === 'paragraph' ? v : ''; } catch (_) { return ''; }
+  }
+  function saveStylePref(v) {
+    try { localStorage.setItem(STYLE_KEY, v); } catch (_) { /* storage unavailable */ }
+  }
+
+  /* ---------- AI provider ---------- */
+  function loadAI() {
+    try {
+      const o = JSON.parse(localStorage.getItem(AI_KEY) || 'null');
+      if (o && typeof o === 'object' && PROVIDERS[o.provider]) return { provider: o.provider, key: String(o.key || ''), model: String(o.model || '') };
+    } catch (_) { /* storage unavailable */ }
+    return { provider: '', key: '', model: '' };
+  }
+  let AI = loadAI();
+  function storeAI() {
+    try {
+      if (AI.provider) localStorage.setItem(AI_KEY, JSON.stringify(AI));
+      else localStorage.removeItem(AI_KEY);
+    } catch (_) { /* storage unavailable */ }
+  }
+  const aiOn = () => !!(AI.provider && PROVIDERS[AI.provider] && AI.key);
+  const aiErr = (code, message, detail) => ({ code, message, detail: detail || '' });
+  function normalizeErr(e) {
+    if (e && typeof e === 'object' && typeof e.code === 'string' && typeof e.message === 'string') return e;
+    return aiErr('unknown', 'משהו השתבש. אפשר לנסות שוב.', e && e.message ? String(e.message).slice(0, 200) : '');
+  }
+  function httpErr(status, data) {
+    const raw = (data && data.error && (data.error.message || data.error.status)) || '';
+    const detail = String(raw).slice(0, 220);
+    if (status === 401 || status === 403) return aiErr('auth', 'המפתח לא תקין או שאין לו הרשאה.', detail);
+    if (status === 404) return aiErr('model', 'המודל לא נמצא אצל הספק. כדאי לבדוק את שם המודל בהגדרות.', detail);
+    if (status === 429) return aiErr('rate', 'הגעת למגבלת השימוש, או שנגמרה היתרה בחשבון אצל הספק.', detail);
+    if (status === 400) {
+      if (/api[ _-]?key/i.test(detail)) return aiErr('auth', 'המפתח לא תקין.', detail);
+      return aiErr('bad_request', 'הספק דחה את הבקשה.', detail);
+    }
+    if (status >= 500) return aiErr('server', 'תקלה זמנית אצל ספק ה-AI. אפשר לנסות שוב בעוד רגע.', detail);
+    return aiErr('http', 'שגיאה מספק ה-AI (' + status + ').', detail);
+  }
+  const REFUSED = 'ה-AI סירב לבקשה. אפשר לנסח את התיאור אחרת ולנסות שוב.';
+  function extractText(provider, d) {
+    if (!d) return '';
+    if (provider === 'openai') {
+      const m = d.choices && d.choices[0] && d.choices[0].message;
+      if (m && m.refusal) throw aiErr('refused', REFUSED);
+      return m && typeof m.content === 'string' ? m.content : '';
+    }
+    if (provider === 'gemini') {
+      if (d.promptFeedback && d.promptFeedback.blockReason) throw aiErr('refused', REFUSED);
+      const c = d.candidates && d.candidates[0];
+      if (c && c.finishReason === 'SAFETY') throw aiErr('refused', REFUSED);
+      const parts = (c && c.content && c.content.parts) || [];
+      return parts.filter(p => !p.thought && typeof p.text === 'string').map(p => p.text).join('');
+    }
+    if (d.stop_reason === 'refusal') throw aiErr('refused', REFUSED);
+    return (d.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+  }
+  // One request, no streaming. The key goes only to the chosen provider.
+  async function callAI(prompt, opts = {}) {
+    const cfg = opts.cfg || AI;
+    const p = PROVIDERS[cfg.provider];
+    if (!p || !cfg.key) throw aiErr('no_key', 'לא הוגדר מפתח AI.');
+    const model = (cfg.model || p.model).trim();
+    const key = cfg.key.trim();
+    let url, headers, body;
+    if (cfg.provider === 'openai') {
+      url = 'https://api.openai.com/v1/chat/completions';
+      headers = { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key };
+      body = { model, messages: [{ role: 'user', content: prompt }] };
+      if (opts.json) body.response_format = { type: 'json_object' };
+      if (/^(gpt-5|o\d)/i.test(model)) body.reasoning_effort = 'low';
+    } else if (cfg.provider === 'gemini') {
+      url = 'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent';
+      headers = { 'Content-Type': 'application/json', 'x-goog-api-key': key };
+      body = { contents: [{ role: 'user', parts: [{ text: prompt }] }] };
+      if (opts.json) body.generationConfig = { responseMimeType: 'application/json' };
+    } else {
+      url = 'https://api.anthropic.com/v1/messages';
+      headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      };
+      body = { model, max_tokens: 16000, messages: [{ role: 'user', content: prompt }] };
+      if (/^claude-(opus|sonnet|haiku|fable)-5/.test(model)) body.output_config = { effort: 'low' };
+      // Server-side refusal fallback; Haiku models do not take it.
+      if (/^claude-(opus-5|sonnet-5-5|fable-5-1)/.test(model)) {
+        body.fallbacks = 'default';
+        headers['anthropic-beta'] = 'server-side-fallback-2026-07-01';
+      }
+    }
+    let res;
+    let data = null;
+    try {
+      res = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body), signal: opts.signal, credentials: 'omit', referrerPolicy: 'no-referrer' });
+      data = await res.json().catch(() => null);
+    } catch (_) {
+      if (opts.signal && opts.signal.aborted) throw aiErr('cancelled', '');
+      throw aiErr('network', 'אין חיבור לספק ה-AI. כדאי לבדוק את החיבור לאינטרנט.');
+    }
+    if (opts.signal && opts.signal.aborted) throw aiErr('cancelled', '');
+    if (!res.ok) throw httpErr(res.status, data);
+    const text = extractText(cfg.provider, data).trim();
+    if (!text) throw aiErr('empty', 'התקבלה תשובה ריקה מה-AI. אפשר לנסות שוב.');
+    return text;
+  }
+
+  /* ---------- text builders ---------- */
+  const isFemale = () => S.sex === 'בת';
+  const g = (o) => (isFemale() ? o.f : o.m);
+
+  function ageText() {
+    const n = String(S.age || '').trim();
+    if (!n) return '';
+    const special = { 'שנים': { 1: 'שנה', 2: 'שנתיים' }, 'חודשים': { 1: 'חודש', 2: 'חודשיים' }, 'ימים': { 1: 'יום', 2: 'יומיים' } }[S.ageUnit] || {};
+    const num = Number(n);
+    if (special[num]) return special[num];
+    return S.ageUnit === 'שנים' ? n : n + ' ' + S.ageUnit;
+  }
+  function heJoin(items) {
+    if (items.length < 2) return items.join('');
+    const last = items[items.length - 1];
+    const and = /^[A-Za-z0-9]/.test(last) ? 'ו-' : 'ו';
+    return items.slice(0, -1).join(', ') + ' ' + and + last;
+  }
+  function bgText() {
+    const chips = BG_CHIPS.filter(x => S.bg.includes(x));
+    const extra = String(S.bgExtra || '').trim();
+    if (chips.length && BG_EXCLUSIVE.has(chips[0])) return [chips[0], extra].filter(Boolean).join(', ');
+    const items = extra ? chips.concat(extra) : chips;
+    if (!items.length) return '';
+    const joined = heJoin(items);
+    return /רקע|בריא/.test(joined) ? joined : joined + ' ברקע';
+  }
+  function firstLine() {
+    const head = [S.sex, ageText()].filter(Boolean).join(' ');
+    return [head, bgText()].filter(Boolean).join(', ');
+  }
+  const caseSig = () => JSON.stringify([firstLine(), S.story.trim()]);
+
+  function isAnswered(q) {
+    const a = S.answers[q.id];
+    if (!a) return false;
+    if (q.kind === 'choice' || q.kind === 'multi') return a.sel.some(v => v !== OTHER) || (a.sel.includes(OTHER) && String(a.other).trim() !== '');
+    return String(a.value || '').trim() !== '';
+  }
+  function answerText(q) {
+    const a = S.answers[q.id];
+    if (q.kind === 'choice' || q.kind === 'multi') {
+      const items = q.options.filter(o => a.sel.includes(o));
+      if (a.sel.includes(OTHER) && String(a.other).trim()) items.push(String(a.other).trim());
+      return items.join(', ');
+    }
+    const v = String(a.value).trim();
+    return q.kind === 'number' && q.unit ? v + ' ' + q.unit : v;
+  }
+  function vitalsText(v) {
+    const t = (x) => String(x || '').trim();
+    const parts = [];
+    if (t(v.hr)) parts.push('דופק ' + t(v.hr));
+    if (t(v.sys) && t(v.dia)) parts.push('ל״ד ' + t(v.sys) + '/' + t(v.dia));
+    else if (t(v.sys)) parts.push('ל״ד סיסטולי ' + t(v.sys));
+    else if (t(v.dia)) parts.push('ל״ד דיאסטולי ' + t(v.dia));
+    if (t(v.rr)) parts.push('נשימות ' + t(v.rr));
+    if (t(v.spo2)) parts.push('סטורציה ' + t(v.spo2) + '%');
+    if (t(v.bgl)) parts.push('סוכר ' + t(v.bgl));
+    if (t(v.gcs)) parts.push('GCS ' + t(v.gcs));
+    if (t(v.pain)) parts.push('כאב ' + t(v.pain) + '/10');
+    if (t(v.temp)) parts.push('חום ' + t(v.temp));
+    return parts.join(', ');
+  }
+  function vitalsLines() {
+    return S.vitals.map((v, i) => {
+      const t = vitalsText(v);
+      if (!t) return '';
+      return (i === 0 ? 'מדדים ראשונים' : 'מדדים חוזרים') + (v.time ? ' (' + v.time + ')' : '') + ': ' + t;
+    }).filter(Boolean);
+  }
+  function dispoTexts() {
+    const out = [];
+    for (const d of DISPO) {
+      if (!S.dispo.includes(d.k)) continue;
+      out.push(d.k === 'hospital' && S.dest.trim() ? g(d) + ': ' + S.dest.trim() : g(d));
+    }
+    if (S.dispo.includes('other') && S.dispoOther.trim()) out.push(S.dispoOther.trim());
+    if (S.dispo.includes('refused')) {
+      const r = REFUSAL.filter(x => S.refusal.includes(x.k)).map(g);
+      if (r.length) out.push('בסירוב: ' + r.join(', '));
+    }
+    const e = ENDSTATE.find(x => x.k === S.endState);
+    if (e) out.push('מצב בסיום הטיפול: ' + g(e));
+    return out;
+  }
+  // Only answered items reach the facts, so the AI cannot document what was not reported.
+  function buildFacts() {
+    const lines = ['תיאור המקרה במילות החובש: ' + S.story.trim()];
+    for (const s of SECTIONS) {
+      const items = S.questions.filter(q => q.section === s.key && isAnswered(q)).map(q => '- ' + q.q + ': ' + answerText(q));
+      if (items.length) lines.push('', s.name + ':', ...items);
+    }
+    const v = vitalsLines();
+    if (v.length) lines.push('', 'מדדים:', ...v.map(x => '- ' + x));
+    const d = dispoTexts();
+    if (d.length) lines.push('', 'סיום האירוע:', ...d.map(x => '- ' + x));
+    if (S.notes.trim()) lines.push('', 'פרטים נוספים: ' + S.notes.trim());
+    return lines.join('\n');
+  }
+  function basicReport() {
+    const out = [firstLine(), S.story.trim()];
+    for (const s of SECTIONS) {
+      const items = S.questions.filter(q => q.section === s.key && isAnswered(q)).map(q => q.q + ': ' + answerText(q));
+      if (items.length) out.push(s.name + ': ' + items.join('; ') + '.');
+    }
+    for (const v of vitalsLines()) out.push(v + '.');
+    const d = dispoTexts();
+    if (d.length) out.push('סיום: ' + d.join('; ') + '.');
+    if (S.notes.trim()) out.push(S.notes.trim());
+    return out.filter(Boolean).join('\n');
+  }
+  const reportSig = () => JSON.stringify([firstLine(), buildFacts(), S.style]);
+
+  function buildQuestionsPrompt() {
+    return [
+      'You are helping an Israeli volunteer EMT (BLS level) complete the documentation of a medical call that just ended. The documentation must be complete and legally defensible. EMTs often forget to record things they did check, such as pupils after a head injury or contraction timing in labor.',
+      '',
+      'CASE',
+      'Patient: ' + firstLine(),
+      "The EMT's short description: " + S.story.trim(),
+      '',
+      'TASK',
+      'List the follow-up items this EMT should answer so the documentation of THIS case is complete.',
+      '- 6 to 16 items; fewer for a simple case. Within each section, put the most important first.',
+      '- Skip anything the description already answers.',
+      '- Do not ask about vital signs (pulse, blood pressure, breathing rate, saturation, glucose, GCS, pain score, temperature) or about evacuation, handover or refusal: the app has fixed fields for those. Case-specific measurements are fine (for example fetal movements or the duration of a seizure).',
+      '- Cover what applies to this case: history and mechanism (onset time, SAMPLE / OPQRST elements, regular medications, allergies, anticoagulants after trauma or bleeding), case-specific examination findings, treatment given within BLS scope, and safety items (for example cervical spine assessment, or who stayed with a minor).',
+      '- Ask about what the EMT observed and did. Never imply that something was found or done.',
+      '- Do not add "אחר" or "לא נבדק" options: the app adds a free-text field, and an unanswered item means it was not checked.',
+      '- Hebrew only, with the terminology of Israeli EMS. Labels are short noun phrases of 2-5 words (for example "מצב אישונים", "אובדן הכרה"), not questions. Options are 1-4 words, at most 6 per item.',
+      '- If the description contains names, ID numbers, addresses or phone numbers, do not repeat them.',
+      '',
+      'Depth examples:',
+      '- Head injury: pupils, loss of consciousness, amnesia, vomiting, headache, anticoagulants, cervical spine, wound location and size, bleeding control, disinfection, dressing.',
+      '- Labor: gestational week, gravida/para, contraction interval and duration, rupture of membranes (time, color), bleeding, urge to push, crowning, fetal movements, pregnancy follow-up and risk, previous cesarean.',
+      '',
+      'OUTPUT',
+      'Return only a JSON object and nothing else:',
+      '{"case": "<case type in Hebrew, 1-3 words>", "items": [<item>, ...]}',
+      'Item examples:',
+      '{"id": "pupils", "section": "בדיקה", "q": "מצב אישונים", "kind": "choice", "options": ["שווים ומגיבים לאור", "לא שווים", "תגובה איטית", "לא מגיבים"]}',
+      '{"id": "wound_care", "section": "טיפול", "q": "טיפול בפצע", "kind": "multi", "options": ["חיטוי", "חבישה", "חבישה לוחצת", "לחץ ישיר"]}',
+      '{"id": "contraction_interval", "section": "אנמנזה", "q": "מרווח בין צירים", "kind": "number", "unit": "דקות"}',
+      'Fields:',
+      '- section: exactly one of "אנמנזה", "בדיקה", "טיפול", "נוסף". List the items section by section in that order.',
+      '- kind: "choice" (one answer), "multi" (any number of answers), "number" (add "unit"), "text" (short free text).',
+      '- hint (optional): up to 8 words of clarification.',
+      '- id: unique, lowercase latin letters and underscores.',
+    ].join('\n');
+  }
+  function buildReportPrompt() {
+    const style = S.style === 'paragraph'
+      ? 'Write ONE flowing paragraph without labels, in this order: history and what happened, examination findings, vital signs, treatment, disposition.'
+      : 'Write short lines, each starting with its label, in this order, and leave out a line that has no facts:\nאנמנזה: ...\nבבדיקה: ...\nמדדים: ...\nטיפול: ...\nסיום: ...';
+    return [
+      'You are writing the free-text section of a medical call report for an Israeli volunteer EMT (BLS level). Write in Hebrew.',
+      '',
+      'This is a legal medical record. Hard rules:',
+      '1. Use ONLY the facts below. Never add a finding, measurement, treatment, time, quote or detail that is not in them. Never call something normal unless the facts say so. Anything not in the facts is left out; do not write that it was not checked.',
+      '2. Keep every number and unit exactly as given.',
+      '3. Register: concise, factual Israeli EMS documentation in the past tense ("בהגעתנו", "בבדיקה", "ללא", "בוצע", "הועבר לצוות"). No diagnosis or opinion beyond what the facts state; a suspicion the EMT wrote stays "חשד ל...".',
+      '4. Attribute history to a source ("לדבריו", "לדברי עדים") only when the facts name the source.',
+      '5. The patient is ' + (isFemale() ? 'female: use feminine grammatical forms.' : 'male: use masculine grammatical forms.'),
+      '6. No personal identifiers (names, ID numbers, addresses, phone numbers), even if they appear in the facts.',
+      '7. The app adds the opening line "' + firstLine() + '" itself. Do not repeat it; start directly with the body.',
+      '8. ' + style,
+      '',
+      'Reply with the report body only: no title, no Markdown, no code fence, no comments before or after.',
+      '',
+      'FACTS',
+      buildFacts(),
+    ].join('\n');
+  }
+  function composeReport(head, text) {
+    let body = String(text || '').replace(/```[a-zA-Z]*\n?/g, '').replace(/\*\*/g, '').replace(/^#+\s*/gm, '').trim();
+    if (head && body.startsWith(head)) body = body.slice(head.length).replace(/^[\s.,]+/, '');
+    return body ? head + '\n' + body : head;
+  }
+  function parseJsonLoose(t) {
+    const s = String(t || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
+    try { return JSON.parse(s); } catch (_) { /* try the outermost object */ }
+    const a = s.indexOf('{');
+    const b = s.lastIndexOf('}');
+    if (a >= 0 && b > a) { try { return JSON.parse(s.slice(a, b + 1)); } catch (_) { /* unparseable */ } }
+    return null;
+  }
+  function sectionKeyOf(name) {
+    const s = String(name || '');
+    if (/אנמנזה|היסטוריה/.test(s)) return 'hx';
+    if (/בדיק|ממצא/.test(s)) return 'exam';
+    if (/טיפול/.test(s)) return 'tx';
+    return 'more';
+  }
+  function normalizeQuestion(o, used) {
+    if (!o || typeof o !== 'object') return null;
+    const label = typeof o.q === 'string' ? o.q.trim().slice(0, 80) : '';
+    if (!label) return null;
+    let kind = KINDS.has(o.kind) ? o.kind : 'text';
+    let options = Array.isArray(o.options) ? o.options.filter(x => typeof x === 'string' && x.trim()).map(x => x.trim().slice(0, 40)) : [];
+    options = Array.from(new Set(options)).filter(x => !/^(אחר|לא נבדק)$/.test(x)).slice(0, 8);
+    if ((kind === 'choice' || kind === 'multi') && !options.length) kind = 'text';
+    if (kind !== 'choice' && kind !== 'multi') options = [];
+    let id = String(o.id || '').toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 40) || 'item';
+    const base = id;
+    for (let n = 2; used.has(id); n++) id = base + '_' + n;
+    used.add(id);
+    return {
+      id, section: sectionKeyOf(o.section), q: label, kind, options,
+      unit: kind === 'number' && typeof o.unit === 'string' ? o.unit.trim().slice(0, 20) : '',
+      hint: typeof o.hint === 'string' ? o.hint.trim().slice(0, 80) : '',
+    };
+  }
+
+  /* ---------- small UI pieces ---------- */
+  function autogrow(t) {
+    if (!t || !t.isConnected || t.offsetParent === null) return;
+    t.style.height = 'auto';
+    t.style.height = (t.scrollHeight + 2) + 'px';
+  }
+  const autogrowIn = (r) => { if (r) $$('textarea', r).forEach(autogrow); };
+
+  let toastTimer = 0;
+  function toast(msg, ms = 3200) {
+    const t = $('#toast');
+    t.textContent = msg;
+    t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.hidden = true; }, ms);
+  }
+  function showBarMsg(m) { const b = $('#barMsg'); b.textContent = m; b.hidden = false; }
+  function hideBarMsg() { $('#barMsg').hidden = true; }
+
+  // Two-tap confirmation: the first tap relabels the button, a second tap within 4 s confirms.
+  function armed(btn, label) {
+    if (btn.dataset.armed === '1') { disarm(btn); return true; }
+    btn.dataset.armed = '1';
+    btn.dataset.label = btn.textContent;
+    btn.textContent = label;
+    btn.classList.add('armed');
+    clearTimeout(btn._armTimer);
+    btn._armTimer = setTimeout(() => disarm(btn), 4000);
+    return false;
+  }
+  function disarm(btn) {
+    if (btn.dataset.armed !== '1') return;
+    btn.dataset.armed = '';
+    btn.textContent = btn.dataset.label;
+    btn.classList.remove('armed');
+    clearTimeout(btn._armTimer);
+  }
+
+  function setStatus(box, o) {
+    box.textContent = '';
+    box.className = 'status' + (o && o.tone ? ' ' + o.tone : '');
+    if (!o || !o.text) { box.hidden = true; return; }
+    if (o.busy) box.append(h('span', { class: 'spin', 'aria-hidden': 'true' }));
+    const body = h('span', { class: 'status-text' }, h('span', { text: o.text }));
+    if (o.detail) body.append(h('span', { class: 'status-detail', dir: 'auto', text: o.detail }));
+    box.append(body);
+    for (const a of o.actions || []) box.append(h('button', { type: 'button', class: 'link', 'data-act': a.act, text: a.label }));
+    box.hidden = false;
+  }
+  const CONFIG_ERRORS = new Set(['auth', 'model', 'no_key', 'bad_request']);
+  function errorActions(e, fallback) {
+    const acts = [{ act: 'retry', label: 'ניסיון חוזר' }, fallback];
+    if (CONFIG_ERRORS.has(e.code)) acts.push({ act: 'settings', label: 'הגדרות AI' });
+    return acts;
+  }
+
+  /* ---------- step 1: the case ---------- */
+  function buildBgChips() {
+    const box = $('#bgChips');
+    box.textContent = '';
+    for (const label of BG_CHIPS) {
+      if (BG_FEMALE_ONLY.has(label) && !isFemale()) continue;
+      box.append(chip(label, S.bg.includes(label), { bg: label }));
+    }
+  }
+  function updateFirstLine() {
+    const out = $('#firstLine');
+    const ready = !!(S.sex && String(S.age).trim());
+    out.textContent = ready ? firstLine() : 'בוחרים מין וגיל, והשורה נבנית כאן';
+    out.classList.toggle('empty', !ready);
+  }
+  function updateExampleBtn() { $('#example').hidden = !!(S.story.trim() || S.age || S.sex); }
+  function renderStep1() {
+    syncPressed($('#sexSeg'), b => b.dataset.sex === S.sex);
+    $('#age').value = S.age;
+    $('#ageUnit').value = S.ageUnit;
+    buildBgChips();
+    $('#bgExtra').value = S.bgExtra;
+    $('#story').value = S.story;
+    updateFirstLine();
+    updateExampleBtn();
+    autogrow($('#story'));
+  }
+
+  $('#sexSeg').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-sex]');
+    if (!b) return;
+    S.sex = b.dataset.sex;
+    if (!isFemale()) S.bg = S.bg.filter(x => !BG_FEMALE_ONLY.has(x));
+    syncPressed($('#sexSeg'), x => x.dataset.sex === S.sex);
+    buildBgChips(); buildDispo(); updateFirstLine(); updateExampleBtn(); hideBarMsg(); saveSoon();
+  });
+  $('#age').addEventListener('input', (ev) => {
+    const v = ev.target.value.replace(/\D/g, '').slice(0, 3);
+    if (v !== ev.target.value) ev.target.value = v;
+    S.age = v;
+    updateFirstLine(); updateExampleBtn(); hideBarMsg(); saveSoon();
+  });
+  $('#ageUnit').addEventListener('change', (ev) => { S.ageUnit = ev.target.value; updateFirstLine(); saveSoon(); });
+  $('#bgChips').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-bg]');
+    if (!b) return;
+    const v = b.dataset.bg;
+    const on = !S.bg.includes(v);
+    if (BG_EXCLUSIVE.has(v)) S.bg = on ? [v] : [];
+    else S.bg = on ? S.bg.filter(x => !BG_EXCLUSIVE.has(x)).concat(v) : S.bg.filter(x => x !== v);
+    syncPressed($('#bgChips'), x => S.bg.includes(x.dataset.bg));
+    updateFirstLine(); saveSoon();
+  });
+  $('#bgExtra').addEventListener('input', (ev) => { S.bgExtra = ev.target.value; updateFirstLine(); saveSoon(); });
+  $('#story').addEventListener('input', (ev) => {
+    S.story = ev.target.value;
+    autogrow(ev.target); updateExampleBtn(); hideBarMsg(); saveSoon();
+  });
+  $('#example').addEventListener('click', () => {
+    Object.assign(S, JSON.parse(JSON.stringify(EXAMPLE)));
+    renderStep1(); buildDispo(); saveSoon();
+  });
+  $('#toQuestions').addEventListener('click', () => {
+    const missing = [];
+    if (!S.sex) missing.push('מין');
+    if (!String(S.age).trim()) missing.push('גיל');
+    if (!S.story.trim()) missing.push('תיאור המקרה');
+    if (missing.length) { showBarMsg('חסר: ' + missing.join(', ')); return; }
+    goStep(2);
+    if (!S.questions.length || S.qSig !== caseSig()) generateQuestions();
+  });
+
+  /* ---------- step 2: questions ---------- */
+  function questionNode(q) {
+    const a = S.answers[q.id];
+    const labelId = 'ql-' + q.id;
+    const node = h('div', { class: 'q', id: 'q-' + q.id, 'data-id': q.id });
+    const head = h('div', { class: 'q-head' },
+      h('span', { class: 'q-dot', 'aria-hidden': 'true' }),
+      h('span', { class: 'q-label', id: labelId, text: q.q }));
+    if (q.hint) head.append(h('span', { class: 'q-hint', text: q.hint }));
+    node.append(head);
+    if (q.kind === 'choice' || q.kind === 'multi') {
+      const group = h('div', { class: 'chips', role: 'group', 'aria-labelledby': labelId });
+      for (const opt of q.options) group.append(chip(opt, a.sel.includes(opt), { v: opt }));
+      group.append(chip('אחר…', a.sel.includes(OTHER), { v: OTHER }));
+      node.append(group);
+      const other = h('input', { type: 'text', class: 'field other', id: 'qo-' + q.id, autocomplete: 'off', placeholder: 'פירוט', 'aria-label': q.q + ', פירוט' });
+      other.value = a.other || '';
+      other.hidden = !a.sel.includes(OTHER);
+      node.append(other);
+    } else if (q.kind === 'number') {
+      const inp = h('input', { type: 'text', inputmode: 'decimal', dir: 'ltr', class: 'field num', id: 'qv-' + q.id, autocomplete: 'off', 'aria-labelledby': labelId });
+      inp.value = a.value || '';
+      node.append(h('div', { class: 'num-row' }, inp, q.unit ? h('span', { class: 'unit', text: q.unit }) : null));
+    } else {
+      const ta = h('textarea', { class: 'field', rows: '1', id: 'qv-' + q.id, 'aria-labelledby': labelId });
+      ta.value = a.value || '';
+      node.append(ta);
+    }
+    node.classList.toggle('answered', isAnswered(q));
+    return node;
+  }
+  function renderQuestions(animate) {
+    for (const s of SECTIONS) {
+      const sec = $('#sec-' + s.key);
+      $('.qs', sec).textContent = '';
+      sec.hidden = true;
+    }
+    S.questions.forEach((q, i) => {
+      const sec = $('#sec-' + q.section) || $('#sec-more');
+      const node = questionNode(q);
+      if (animate) { node.classList.add('enter'); node.style.animationDelay = Math.min(i * 40, 600) + 'ms'; }
+      $('.qs', sec).append(node);
+      sec.hidden = false;
+    });
+    renderQMeta();
+    autogrowIn($('#qroot'));
+  }
+  function renderQMeta() {
+    const c = $('#caseChip');
+    c.textContent = S.caseType;
+    c.hidden = !S.caseType;
+    const total = S.questions.length;
+    $('#qProgress').textContent = total ? 'סומנו ' + S.questions.filter(isAnswered).length + ' מתוך ' + total : '';
+    $('#qRegen').hidden = !!qCtl || !aiOn() || !total;
+    $('#qSkel').hidden = !(qCtl && !total);
+  }
+  const qById = (id) => S.questions.find(q => q.id === id);
+
+  $('#qroot').addEventListener('click', (ev) => {
+    const b = ev.target.closest('.q .chip');
+    if (!b) return;
+    const node = b.closest('.q');
+    const q = qById(node.dataset.id);
+    if (!q) return;
+    const a = S.answers[q.id];
+    const v = b.dataset.v;
+    const on = b.getAttribute('aria-pressed') !== 'true';
+    if (q.kind === 'choice') a.sel = on ? [v] : [];
+    else a.sel = on ? a.sel.concat(v) : a.sel.filter(x => x !== v);
+    syncPressed(node, x => a.sel.includes(x.dataset.v));
+    const other = $('.other', node);
+    if (other) {
+      other.hidden = !a.sel.includes(OTHER);
+      if (v === OTHER && on) other.focus();
+    }
+    node.classList.toggle('answered', isAnswered(q));
+    renderQMeta(); saveSoon();
+  });
+  $('#qroot').addEventListener('input', (ev) => {
+    const t = ev.target;
+    const node = t.closest('.q');
+    if (!node) return;
+    const q = qById(node.dataset.id);
+    if (!q) return;
+    const a = S.answers[q.id];
+    if (t.classList.contains('other')) a.other = t.value;
+    else a.value = t.value;
+    if (t.tagName === 'TEXTAREA') autogrow(t);
+    node.classList.toggle('answered', isAnswered(q));
+    renderQMeta(); saveSoon();
+  });
+
+  function qStatus(kind, e) {
+    const box = $('#qStatus');
+    if (kind === 'loading') {
+      setStatus(box, { busy: true, text: 'ה-AI מכין שאלות לפי המקרה. בינתיים אפשר למלא מדדים.', actions: [{ act: 'stop', label: 'עצירה' }] });
+    } else if (kind === 'error') {
+      setStatus(box, { tone: 'error', text: e.message, detail: e.detail, actions: errorActions(e, { act: 'basic', label: 'שאלות כלליות' }) });
+    } else if (kind === 'stopped' || kind === 'idle') {
+      setStatus(box, { text: kind === 'stopped' ? 'ההכנה נעצרה.' : 'עדיין אין שאלות למקרה הזה.', actions: [{ act: 'retry', label: 'הכנת שאלות' }, { act: 'basic', label: 'שאלות כלליות' }] });
+    } else if (kind === 'basic') {
+      setStatus(box, aiOn()
+        ? { text: 'מוצגות שאלות כלליות, בלי התאמה למקרה.', actions: [{ act: 'retry', label: 'התאמה בעזרת AI' }] }
+        : { text: 'מוצגות שאלות כלליות, כי לא הוגדר AI.', actions: [{ act: 'settings', label: 'הגדרת AI' }] });
+    } else {
+      setStatus(box, null);
+    }
+  }
+  function carryMap() {
+    const m = new Map();
+    for (const q of S.questions) if (isAnswered(q)) m.set(q.kind + '|' + q.q, S.answers[q.id]);
+    return m;
+  }
+  function adoptQuestions(qs, caseType, source, carry) {
+    S.questions = qs;
+    S.answers = {};
+    for (const q of qs) {
+      const prev = carry.get(q.kind + '|' + q.q);
+      S.answers[q.id] = prev
+        ? { sel: (prev.sel || []).filter(v => v === OTHER || q.options.includes(v)), other: prev.other || '', value: prev.value || '' }
+        : blankAnswer();
+    }
+    S.caseType = caseType;
+    S.qSource = source;
+    S.qSig = caseSig();
+    S.reportSig = '';
+  }
+  function abortQuestions() {
+    if (!qCtl) return;
+    const c = qCtl;
+    qCtl = null;
+    qPendingSig = '';
+    c.abort();
+  }
+  function stopQuestions() {
+    if (!qCtl) return;
+    abortQuestions();
+    qStatus(S.questions.length ? 'hidden' : 'stopped');
+    renderQMeta(); saveSoon();
+  }
+  function loadBasic() {
+    abortQuestions();
+    const carry = carryMap();
+    adoptQuestions(BASIC_QUESTIONS.map(q => Object.assign({ options: [], unit: '', hint: '' }, q)), 'שאלות כלליות', 'basic', carry);
+    renderQuestions(false); qStatus('basic'); syncStepper(); saveSoon();
+  }
+  async function generateQuestions() {
+    const sig = caseSig();
+    if (qCtl && qPendingSig === sig) return;
+    abortQuestions();
+    if (!aiOn()) { loadBasic(); return; }
+    const carry = carryMap();
+    if (S.qSig !== sig) {
+      S.questions = []; S.answers = {}; S.caseType = '';
+      renderQuestions(false);
+    }
+    const ctl = new AbortController();
+    qCtl = ctl;
+    qPendingSig = sig;
+    qStatus('loading'); renderQMeta();
+    try {
+      const text = await callAI(buildQuestionsPrompt(), { json: true, signal: ctl.signal });
+      if (qCtl !== ctl) return;
+      const parsed = parseJsonLoose(text);
+      const raw = parsed && Array.isArray(parsed.items) ? parsed.items : Array.isArray(parsed) ? parsed : [];
+      const used = new Set();
+      const qs = [];
+      for (const o of raw) {
+        if (qs.length >= MAX_QUESTIONS) break;
+        const q = normalizeQuestion(o, used);
+        if (q) qs.push(q);
+      }
+      if (!qs.length) throw aiErr('empty', 'התשובה מה-AI לא כללה שאלות. אפשר לנסות שוב.');
+      const caseType = parsed && typeof parsed.case === 'string' ? parsed.case.trim().slice(0, 40) : '';
+      adoptQuestions(qs, caseType, 'ai', carry);
+      renderQuestions(true); qStatus('hidden');
+    } catch (e) {
+      if (qCtl !== ctl) return;
+      if (e && e.code === 'cancelled') qStatus(S.questions.length ? 'hidden' : 'stopped');
+      else qStatus('error', normalizeErr(e));
+    } finally {
+      if (qCtl === ctl) { qCtl = null; qPendingSig = ''; }
+      renderQMeta(); syncStepper(); saveSoon();
+    }
+  }
+  $('#qStatus').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-act]');
+    if (!b) return;
+    const act = b.dataset.act;
+    if (act === 'stop') stopQuestions();
+    else if (act === 'retry') generateQuestions();
+    else if (act === 'basic') loadBasic();
+    else if (act === 'settings') openSettings();
+  });
+  $('#qRegen').addEventListener('click', (ev) => {
+    if (S.questions.some(isAnswered) && !armed(ev.currentTarget, 'להחליף את השאלות?')) return;
+    S.qSig = '';
+    generateQuestions();
+  });
+
+  /* ---------- step 2: vitals ---------- */
+  function isOdd(k, raw) {
+    const s = String(raw || '').trim();
+    if (!s) return false;
+    const n = Number(s.replace(',', '.'));
+    if (!Number.isFinite(n)) return true;
+    const r = RANGES[k];
+    if (!r) return false;
+    return n < r[0] || n > r[1] || (INTEGER_ONLY.has(k) && !Number.isInteger(n));
+  }
+  function markOdd(cell) {
+    const v = S.vitals[Number(cell.dataset.i)] || {};
+    const keys = cell.dataset.k === 'bp' ? ['sys', 'dia'] : [cell.dataset.k];
+    const odd = keys.some(k => isOdd(k, v[k]));
+    cell.classList.toggle('odd', odd);
+    $('.odd-note', cell).hidden = !odd;
+  }
+  function vitalCell(f, v, i) {
+    const cell = h('div', { class: 'vital', 'data-i': i, 'data-k': f.k });
+    const firstId = 'v' + i + '-' + (f.k === 'bp' ? 'sys' : f.k);
+    cell.append(h('div', { class: 'vital-top' },
+      h('label', { class: 'vital-name', for: firstId, text: f.name }),
+      h('span', { class: 'vital-unit', text: f.unit })));
+    const inp = (k, aria) => {
+      const x = h('input', { id: 'v' + i + '-' + k, type: 'text', inputmode: f.decimal ? 'decimal' : 'numeric', dir: 'ltr', autocomplete: 'off', maxlength: '5', 'data-i': i, 'data-k': k, 'aria-label': aria || null });
+      x.value = v[k] || '';
+      return x;
+    };
+    if (f.k === 'bp') cell.append(h('div', { class: 'bp', dir: 'ltr' }, inp('sys', 'ל״ד סיסטולי'), h('span', { 'aria-hidden': 'true', text: '/' }), inp('dia', 'ל״ד דיאסטולי')));
+    else cell.append(inp(f.k));
+    cell.append(h('span', { class: 'odd-note', text: 'ערך חריג, כדאי לבדוק', hidden: true }));
+    markOdd(cell);
+    return cell;
+  }
+  function renderVitals() {
+    const box = $('#vitalsSets');
+    box.textContent = '';
+    S.vitals.forEach((v, i) => {
+      const timeId = 'v' + i + '-time';
+      const time = h('input', { id: timeId, type: 'time', class: 'field time', dir: 'ltr', 'data-i': i, 'data-k': 'time' });
+      time.value = v.time || '';
+      const head = h('div', { class: 'vset-head' },
+        h('span', { class: 'vset-title', text: i === 0 ? 'מדדים ראשונים' : 'מדדים חוזרים' }),
+        h('span', { class: 'vtime' }, h('label', { for: timeId, text: 'שעה' }), time),
+        i > 0 ? h('button', { type: 'button', class: 'link quiet', 'data-rm': i, text: 'הסרה' }) : null);
+      const grid = h('div', { class: 'vitals' });
+      for (const f of VITALS) grid.append(vitalCell(f, v, i));
+      box.append(h('div', { class: 'vset' }, head, grid));
+    });
+    $('#addVitals').hidden = S.vitals.length >= 3;
+  }
+  $('#vitalsSets').addEventListener('input', (ev) => {
+    const t = ev.target;
+    const i = Number(t.dataset.i);
+    const k = t.dataset.k;
+    if (!k || !S.vitals[i]) return;
+    if (k !== 'time') {
+      const clean = t.value.replace(/[^\d.,]/g, '');
+      if (clean !== t.value) t.value = clean;
+    }
+    S.vitals[i][k] = t.value.trim();
+    const cell = t.closest('.vital');
+    if (cell) markOdd(cell);
+    saveSoon();
+  });
+  $('#vitalsSets').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-rm]');
+    if (!b) return;
+    S.vitals.splice(Number(b.dataset.rm), 1);
+    renderVitals(); saveSoon();
+  });
+  $('#addVitals').addEventListener('click', () => {
+    if (S.vitals.length >= 3) return;
+    S.vitals.push(blankVitals());
+    renderVitals(); saveSoon();
+    const first = document.getElementById('v' + (S.vitals.length - 1) + '-hr');
+    if (first) first.focus();
+  });
+
+  /* ---------- step 2: disposition and notes ---------- */
+  function buildDispo() {
+    const d = $('#dispoChips');
+    d.textContent = '';
+    for (const x of DISPO) d.append(chip(g(x), false, { dispo: x.k }));
+    d.append(chip('אחר…', false, { dispo: 'other' }));
+    const r = $('#refusalChips');
+    r.textContent = '';
+    for (const x of REFUSAL) r.append(chip(g(x), false, { refusal: x.k }));
+    const e = $('#endChips');
+    e.textContent = '';
+    for (const x of ENDSTATE) e.append(chip(g(x), false, { end: x.k }));
+    $('#dest').value = S.dest;
+    $('#dispoOther').value = S.dispoOther;
+    syncDispo();
+  }
+  function syncDispo() {
+    syncPressed($('#dispoChips'), b => S.dispo.includes(b.dataset.dispo));
+    syncPressed($('#refusalChips'), b => S.refusal.includes(b.dataset.refusal));
+    syncPressed($('#endChips'), b => S.endState === b.dataset.end);
+    $('#destWrap').hidden = !S.dispo.includes('hospital');
+    $('#dispoOther').hidden = !S.dispo.includes('other');
+    $('#refusalWrap').hidden = !S.dispo.includes('refused');
+  }
+  $('#sec-dispo').addEventListener('click', (ev) => {
+    const b = ev.target.closest('.chip');
+    if (!b) return;
+    const { dispo, refusal, end } = b.dataset;
+    if (dispo) S.dispo = toggleIn(S.dispo, dispo);
+    else if (refusal) S.refusal = toggleIn(S.refusal, refusal);
+    else if (end) S.endState = S.endState === end ? '' : end;
+    syncDispo();
+    if (dispo === 'other' && S.dispo.includes('other')) $('#dispoOther').focus();
+    saveSoon();
+  });
+  $('#dest').addEventListener('input', (ev) => { S.dest = ev.target.value; saveSoon(); });
+  $('#dispoOther').addEventListener('input', (ev) => { S.dispoOther = ev.target.value; saveSoon(); });
+  $('#notes').addEventListener('input', (ev) => { S.notes = ev.target.value; autogrow(ev.target); saveSoon(); });
+  $('#toReport').addEventListener('click', () => { if (qCtl) stopQuestions(); goStep(3); });
+
+  /* ---------- step 3: the report ---------- */
+  function rStatus(kind, e) {
+    const box = $('#rStatus');
+    if (kind === 'loading') {
+      setStatus(box, { busy: true, text: 'ה-AI מנסח את הטקסט מהתשובות בלבד…', actions: [{ act: 'stop', label: 'עצירה' }] });
+    } else if (kind === 'error') {
+      setStatus(box, { tone: 'error', text: e.message, detail: e.detail, actions: errorActions(e, { act: 'basic', label: 'טקסט בסיסי' }) });
+    } else if (kind === 'basic') {
+      setStatus(box, aiOn()
+        ? { text: 'טקסט בסיסי שהורכב ישירות מהתשובות.', actions: [{ act: 'regen', label: 'ניסוח בעזרת AI' }] }
+        : { text: 'טקסט בסיסי שהורכב ישירות מהתשובות, כי לא הוגדר AI.', actions: [{ act: 'settings', label: 'הגדרת AI' }] });
+    } else if (kind === 'stale') {
+      setStatus(box, { text: S.reportEdited ? 'התשובות השתנו מאז הניסוח, והטקסט נערך ידנית. ניסוח מחדש יחליף אותו.' : 'התשובות השתנו מאז הניסוח.', actions: [{ act: 'regen', label: 'ניסוח מחדש' }] });
+    } else if (kind === 'none') {
+      setStatus(box, { text: 'עדיין אין טקסט.', actions: [{ act: 'regen', label: 'ניסוח' }] });
+    } else {
+      setStatus(box, null);
+    }
+  }
+  function showReport() { const ta = $('#report'); ta.value = S.report; autogrow(ta); }
+  function setRBusy(b) { $('#rRegen').disabled = b; $('#report').classList.toggle('busy', b); }
+  function abortReport() {
+    if (!rCtl) return;
+    const c = rCtl;
+    rCtl = null;
+    c.abort();
+    setRBusy(false);
+  }
+  function stopReport() {
+    if (!rCtl) return;
+    abortReport();
+    rStatus(S.report ? (S.reportSig === reportSig() ? 'hidden' : 'stale') : 'none');
+  }
+  function useBasicReport() {
+    abortReport();
+    S.report = basicReport();
+    S.reportSig = reportSig();
+    S.reportSource = 'basic';
+    S.reportEdited = false;
+    showReport(); rStatus('basic'); renderMissing(); syncStepper(); saveSoon();
+  }
+  async function generateReport() {
+    abortReport();
+    if (!aiOn()) { useBasicReport(); return; }
+    const ctl = new AbortController();
+    rCtl = ctl;
+    const head = firstLine();
+    const sig = reportSig();
+    setRBusy(true); rStatus('loading');
+    try {
+      const text = await callAI(buildReportPrompt(), { signal: ctl.signal });
+      if (rCtl !== ctl) return;
+      S.report = composeReport(head, text);
+      S.reportSig = sig;
+      S.reportSource = 'ai';
+      S.reportEdited = false;
+      showReport(); rStatus('hidden');
+    } catch (e) {
+      if (rCtl !== ctl) return;
+      if (e && e.code === 'cancelled') rStatus(S.report ? 'hidden' : 'none');
+      else rStatus('error', normalizeErr(e));
+    } finally {
+      if (rCtl === ctl) { rCtl = null; setRBusy(false); }
+      renderMissing(); syncStepper(); saveSoon();
+    }
+  }
+  // Never calls the AI on page load; only when the user moves to this step.
+  function enterReport(byUser) {
+    showReport(); renderMissing();
+    if (rCtl) return;
+    if (S.report && S.reportSig === reportSig()) { rStatus(S.reportSource === 'basic' ? 'basic' : 'hidden'); return; }
+    if (S.report && (S.reportEdited || !byUser)) { rStatus('stale'); return; }
+    if (!byUser) { rStatus('none'); return; }
+    generateReport();
+  }
+  function missingItems() {
+    const m = S.questions.filter(q => !isAnswered(q)).map(q => ({ label: q.q, target: 'q-' + q.id }));
+    if (!S.vitals.some(v => vitalsText(v))) m.push({ label: 'מדדים', target: 'sec-vitals' });
+    if (!S.dispo.length) m.push({ label: 'סיום האירוע', target: 'sec-dispo' });
+    return m;
+  }
+  function renderMissing() {
+    const box = $('#missing');
+    box.textContent = '';
+    const items = missingItems();
+    if (!items.length) { box.append(h('p', { class: 'allgood', text: '✓ הכול סומן. אין שאלות פתוחות.' })); return; }
+    box.append(h('h2', { text: 'לא סומן, ולכן לא נכתב (' + items.length + ')' }));
+    box.append(h('p', { class: 'fine', text: 'אם זה נבדק או בוצע בפועל, אפשר לחזור, לסמן ולנסח מחדש.' }));
+    const wrap = h('div', { class: 'chips' });
+    for (const it of items) wrap.append(h('button', { type: 'button', class: 'chip miss', 'data-target': it.target, text: it.label }));
+    box.append(wrap);
+  }
+  function syncStyle() { syncPressed($('#styleSeg'), b => b.dataset.style === S.style); }
+
+  $('#report').addEventListener('input', (ev) => {
+    S.report = ev.target.value;
+    S.reportEdited = true;
+    autogrow(ev.target); saveSoon();
+  });
+  $('#rRegen').addEventListener('click', (ev) => {
+    if (S.reportEdited && S.report && !armed(ev.currentTarget, 'להחליף את הטקסט שנערך?')) return;
+    generateReport();
+  });
+  $('#rStatus').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-act]');
+    if (!b) return;
+    const act = b.dataset.act;
+    if (act === 'stop') stopReport();
+    else if (act === 'regen' || act === 'retry') generateReport();
+    else if (act === 'basic') useBasicReport();
+    else if (act === 'settings') openSettings();
+  });
+  let styleTapAt = 0;
+  $('#styleSeg').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-style]');
+    if (!b || b.dataset.style === S.style) return;
+    if (S.reportEdited && S.report && Date.now() - styleTapAt > 4000) {
+      styleTapAt = Date.now();
+      toast('הטקסט נערך ידנית. לחיצה נוספת תנסח אותו מחדש בסגנון הזה.', 4000);
+      return;
+    }
+    styleTapAt = 0;
+    S.style = b.dataset.style;
+    saveStylePref(S.style); syncStyle(); saveSoon();
+    generateReport();
+  });
+  $('#missing').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-target]');
+    if (!b) return;
+    goStep(2);
+    const t = document.getElementById(b.dataset.target);
+    if (!t) return;
+    t.scrollIntoView({ block: 'center' });
+    t.classList.remove('flash');
+    void t.offsetWidth;
+    t.classList.add('flash');
+    const f = t.querySelector('button, input, textarea');
+    if (f) f.focus({ preventScroll: true });
+  });
+  $('#copyBtn').addEventListener('click', () => {
+    const ta = $('#report');
+    const text = ta.value;
+    if (!text.trim()) { toast('אין עדיין טקסט להעתקה.'); return; }
+    const manual = () => { ta.focus(); ta.select(); toast('ההעתקה האוטומטית לא עבדה. הטקסט מסומן, אפשר להעתיק ידנית.', 4500); };
+    try {
+      navigator.clipboard.writeText(text).then(() => toast('הטקסט הועתק. אפשר להדביק בטופס.'), manual);
+    } catch (_) {
+      manual();
+    }
+  });
+
+  /* ---------- navigation ---------- */
+  function syncStepper() {
+    for (const b of $$('.stepper [data-go]')) {
+      const n = Number(b.dataset.go);
+      const reach = n === 1 || (n === 2 && (S.step >= 2 || !!S.qSig)) || (n === 3 && (S.step === 3 || !!S.report || !!S.qSig));
+      b.disabled = !reach;
+      if (n === S.step) b.setAttribute('aria-current', 'step');
+      else b.removeAttribute('aria-current');
+      b.classList.toggle('done', (n === 1 && !!S.qSig) || (n === 2 && !!S.report));
+    }
+  }
+  function goStep(n, byUser = true) {
+    if (!$('#settings').hidden) closeSettings();
+    S.step = n;
+    for (const p of $$('main > .step-panel')) p.hidden = Number(p.dataset.step) !== n;
+    for (const r of $$('[data-bar]')) r.hidden = Number(r.dataset.bar) !== n;
+    hideBarMsg(); syncStepper();
+    window.scrollTo(0, 0);
+    autogrowIn($('main > .step-panel[data-step="' + n + '"]'));
+    if (n === 2) renderQMeta();
+    if (n === 3) enterReport(byUser);
+    saveSoon();
+  }
+  document.addEventListener('click', (ev) => {
+    const go = ev.target.closest('[data-go]');
+    if (go) { if (!go.disabled) goStep(Number(go.dataset.go)); return; }
+    if (ev.target.closest('[data-open-settings]')) openSettings();
+  });
+
+  /* ---------- settings ---------- */
+  function renderProviderNote() {
+    const p = PROVIDERS[$('#setProvider').value];
+    const note = $('#setNote');
+    note.textContent = '';
+    $('#setKeyWrap').hidden = !p;
+    $('#setModelWrap').hidden = !p;
+    $('#setTest').hidden = !p;
+    if (!p) {
+      note.append(h('p', { text: 'בלי AI: שאלות כלליות לכל מקרה, וטקסט שמורכב ישירות מהתשובות. שום פרט מהמקרה לא יוצא מהמכשיר.' }));
+      return;
+    }
+    note.append(h('p', {}, document.createTextNode('איפה מקבלים מפתח: '),
+      h('a', { href: 'https://' + p.keyHost, target: '_blank', rel: 'noopener noreferrer', dir: 'ltr', text: p.keyHost })));
+    note.append(h('p', { text: p.note }));
+  }
+  function fillSettingsForm(cfg) {
+    $('#setProvider').value = cfg.provider || '';
+    $('#setKey').value = cfg.key || '';
+    $('#setModel').value = cfg.model || (PROVIDERS[cfg.provider] ? PROVIDERS[cfg.provider].model : '');
+    renderProviderNote();
+  }
+  const formCfg = () => ({ provider: $('#setProvider').value, key: $('#setKey').value.trim(), model: $('#setModel').value.trim() });
+  function openSettings() {
+    fillSettingsForm(AI);
+    setStatus($('#setStatus'), null);
+    $('#settings').hidden = false;
+    document.body.classList.add('in-settings');
+    window.scrollTo(0, 0);
+  }
+  function closeSettings() {
+    $('#settings').hidden = true;
+    document.body.classList.remove('in-settings');
+    autogrowIn($('main > .step-panel[data-step="' + S.step + '"]'));
+  }
+  function syncAiUi() {
+    const on = aiOn();
+    $('#aiChip').classList.toggle('on', on);
+    $('#aiChipText').textContent = on ? PROVIDERS[AI.provider].short : 'בלי AI';
+    $('#aiNotice').hidden = on;
+    renderQMeta();
+  }
+  $('#setProvider').addEventListener('change', () => {
+    const p = PROVIDERS[$('#setProvider').value];
+    const m = $('#setModel');
+    const isDefault = !m.value.trim() || Object.values(PROVIDERS).some(x => x.model === m.value.trim());
+    if (p && isDefault) m.value = p.model;
+    renderProviderNote();
+    setStatus($('#setStatus'), null);
+  });
+  let testCtl = null;
+  $('#setTest').addEventListener('click', async () => {
+    const cfg = formCfg();
+    if (!cfg.key) { setStatus($('#setStatus'), { tone: 'error', text: 'חסר מפתח API.' }); return; }
+    if (testCtl) testCtl.abort();
+    const ctl = new AbortController();
+    testCtl = ctl;
+    setStatus($('#setStatus'), { busy: true, text: 'בודק חיבור…' });
+    try {
+      await callAI('Reply with the single word OK.', { cfg, signal: ctl.signal });
+      if (testCtl === ctl) setStatus($('#setStatus'), { tone: 'ok', text: '✓ החיבור תקין. נשאר לשמור.' });
+    } catch (e) {
+      if (testCtl === ctl && !(e && e.code === 'cancelled')) {
+        const n = normalizeErr(e);
+        setStatus($('#setStatus'), { tone: 'error', text: n.message, detail: n.detail });
+      }
+    } finally {
+      if (testCtl === ctl) testCtl = null;
+    }
+  });
+  $('#setSave').addEventListener('click', () => {
+    const cfg = formCfg();
+    if (cfg.provider && !cfg.key) { setStatus($('#setStatus'), { tone: 'error', text: 'חסר מפתח API.' }); return; }
+    AI = cfg.provider ? cfg : { provider: '', key: '', model: '' };
+    storeAI(); syncAiUi(); closeSettings();
+    toast(AI.provider ? 'ההגדרות נשמרו.' : 'נשמר: עבודה בלי AI.');
+  });
+  $('#setForget').addEventListener('click', (ev) => {
+    if (!AI.key && !$('#setKey').value) { toast('לא שמור מפתח במכשיר.'); return; }
+    if (!armed(ev.currentTarget, 'למחוק את המפתח?')) return;
+    AI = { provider: '', key: '', model: '' };
+    storeAI(); fillSettingsForm(AI); syncAiUi();
+    toast('המפתח נמחק מהמכשיר.');
+  });
+  $('#setClose').addEventListener('click', closeSettings);
+  $('#aiChip').addEventListener('click', openSettings);
+
+  /* ---------- new case ---------- */
+  const caseIsEmpty = () => !S.sex && !S.age && !S.story.trim() && !S.bg.length && !S.bgExtra.trim() && !S.questions.length && !S.report;
+  function renderAll() {
+    renderStep1();
+    renderQuestions(false);
+    renderVitals();
+    buildDispo();
+    $('#notes').value = S.notes;
+    showReport();
+    syncStyle();
+    syncAiUi();
+    setRBusy(false);
+    rStatus('hidden');
+    if (S.qSource === 'basic' && S.questions.length) qStatus('basic');
+    else if (!S.questions.length && S.step === 2) qStatus('idle');
+    else qStatus('hidden');
+    syncStepper();
+  }
+  function resetCase() {
+    abortQuestions();
+    abortReport();
+    const style = S.style;
+    S = blankCase();
+    S.style = style;
+    clearDraft();
+    renderAll();
+    goStep(1, false);
+    toast('המקרה נמחק. אפשר להתחיל מקרה חדש.');
+  }
+  $('#newCase').addEventListener('click', (ev) => {
+    if (caseIsEmpty()) { toast('אין מקרה פתוח.'); return; }
+    if (!armed(ev.currentTarget, 'למחוק את המקרה?')) return;
+    resetCase();
+  });
+
+  /* ---------- boot ---------- */
+  function agoText(t) {
+    const min = Math.max(0, Math.round((Date.now() - t) / 60000));
+    if (min < 1) return 'ממש עכשיו';
+    if (min < 60) return 'לפני ' + min + ' דק׳';
+    return 'לפני ' + Math.round(min / 60) + ' שע׳';
+  }
+  const draft = loadDraft();
+  if (draft) S = restoreCase(draft);
+  else { const st = loadStylePref(); if (st) S.style = st; }
+  renderAll();
+  goStep(S.step, false);
+  if (draft && !caseIsEmpty()) toast('שוחזר המקרה האחרון (' + agoText(draft.savedAt) + '). "מקרה חדש" מוחק אותו.', 5000);
+})();
+</script>
+</body>
+</html>
