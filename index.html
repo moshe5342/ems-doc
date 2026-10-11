@@ -19,7 +19,7 @@
 <style>
 :root {
   /* Layout: a one-column run sheet. Stepper on top, one card per documentation
-     section, and an action bar pinned to the bottom within thumb reach. */
+     section in report order, and an action bar pinned to the bottom within thumb reach. */
   --bg: #EBEFF3;
   --surface: #FFFFFF;
   --surface-2: #F3F5F8;
@@ -115,7 +115,9 @@ h2 label { cursor: inherit; }
 .h2row { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; }
 .lbl { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 600; color: var(--muted); }
 .fine { margin: 0; font-size: 13px; color: var(--muted); }
+.stack { display: flex; flex-direction: column; gap: 8px; }
 .notice { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 12px 14px; border: 1px dashed var(--line); border-radius: 12px; background: var(--surface); font-size: 14px; }
+.hint-warn { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 10px 12px; border: 1px solid var(--accent); border-radius: 10px; background: var(--accent-soft); font-size: 14px; }
 
 /* Form fields */
 .field { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); color: var(--ink); font: 16px/1.5 var(--font-body); }
@@ -123,11 +125,9 @@ h2 label { cursor: inherit; }
 .field:focus { outline: 2px solid var(--focus); outline-offset: 1px; border-color: transparent; }
 textarea.field { display: block; resize: none; overflow: hidden; }
 select.field { padding-block: 8px; }
-.row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-.age-row { display: flex; gap: 8px; }
+.age-row { display: flex; gap: 8px; max-width: 320px; }
 .age-row .num { flex: 1 1 0; min-width: 0; text-align: center; font-family: var(--font-num); }
 .age-row select { flex: 1.4 1 0; min-width: 0; }
-@media (max-width: 380px) { .row2 { grid-template-columns: minmax(0, 1fr); } }
 
 /* Chips */
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -136,6 +136,7 @@ select.field { padding-block: 8px; }
 .chip[aria-pressed="true"]::before { content: "✓"; font-weight: 700; }
 .seg { display: flex; gap: 8px; }
 .seg .chip { flex: 1 1 0; justify-content: center; }
+.sex-seg .chip { min-height: 54px; font-size: 19px; font-weight: 600; }
 .chip.miss { border-style: dashed; background: transparent; }
 
 /* First line preview */
@@ -168,12 +169,13 @@ select.field { padding-block: 8px; }
 .num-row { display: flex; align-items: center; gap: 8px; }
 .num-row .field { width: 8em; text-align: center; font-family: var(--font-num); }
 .unit { font-size: 14px; color: var(--muted); }
+.fx { display: flex; flex-direction: column; gap: 14px; }
+.fx-group { display: flex; flex-direction: column; gap: 6px; border-radius: 10px; scroll-margin-block: 24px 140px; }
+.fx-group .lbl { margin-bottom: 0; }
 .q.enter { animation: enter 0.3s ease-out both; }
-.q.flash { animation: flash 1.6s ease-out; }
-.card.flash { animation: flash-card 1.6s ease-out; }
+.flash { animation: flash-ring 1.8s ease-out; }
 @keyframes enter { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-@keyframes flash { from { background: var(--accent-soft); } to { background: transparent; } }
-@keyframes flash-card { from { background: var(--accent-soft); } to { background: var(--surface); } }
+@keyframes flash-ring { from { box-shadow: 0 0 0 3px var(--accent); } to { box-shadow: 0 0 0 3px transparent; } }
 
 /* Vitals */
 .vsets { display: flex; flex-direction: column; gap: 14px; }
@@ -181,6 +183,7 @@ select.field { padding-block: 8px; }
 .vset + .vset { padding-top: 14px; border-top: 1px dashed var(--line); }
 .vset-head { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; }
 .vset-title { font-weight: 600; }
+.vset-head .chip { min-height: 34px; padding: 4px 10px; font-size: 14px; }
 .vtime { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
 .field.time { width: auto; min-height: 36px; padding: 4px 8px; font-family: var(--font-num); font-size: 16px; }
 .vitals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
@@ -198,7 +201,7 @@ select.field { padding-block: 8px; }
 .odd-note { font-size: 11.5px; color: var(--danger); }
 
 /* Disposition */
-.sub { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px dashed var(--line); border-radius: 10px; background: var(--surface-2); }
+.sub { display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 1px dashed var(--line); border-radius: 10px; background: var(--surface-2); scroll-margin-block: 24px 140px; }
 .sub.alert { border-color: var(--accent); background: var(--accent-soft); }
 
 /* Status lines */
@@ -278,43 +281,61 @@ select.field { padding-block: 8px; }
 
       <div class="card">
         <h2>המטופל</h2>
-        <div class="row2">
-          <div>
-            <span class="lbl" id="sexLbl">מין</span>
-            <div class="seg" id="sexSeg" role="group" aria-labelledby="sexLbl">
-              <button type="button" class="chip" data-sex="בן" aria-pressed="false">בן</button>
-              <button type="button" class="chip" data-sex="בת" aria-pressed="false">בת</button>
-            </div>
+        <div>
+          <span class="lbl" id="sexLbl">מין</span>
+          <div class="seg sex-seg" id="sexSeg" role="group" aria-labelledby="sexLbl">
+            <button type="button" class="chip" data-sex="בן" aria-pressed="false">בן</button>
+            <button type="button" class="chip" data-sex="בת" aria-pressed="false">בת</button>
           </div>
-          <div>
-            <label class="lbl" for="age">גיל</label>
-            <div class="age-row">
-              <input id="age" class="field num" type="text" inputmode="numeric" dir="ltr" maxlength="3" autocomplete="off">
-              <select id="ageUnit" class="field" aria-label="יחידת גיל">
-                <option value="שנים">שנים</option>
-                <option value="חודשים">חודשים</option>
-                <option value="ימים">ימים</option>
-              </select>
-            </div>
+        </div>
+        <div>
+          <label class="lbl" for="age">גיל</label>
+          <div class="age-row">
+            <input id="age" class="field num" type="text" inputmode="numeric" dir="ltr" maxlength="3" autocomplete="off">
+            <select id="ageUnit" class="field" aria-label="יחידת גיל">
+              <option value="שנים">שנים</option>
+              <option value="חודשים">חודשים</option>
+              <option value="ימים">ימים</option>
+            </select>
           </div>
         </div>
         <div>
           <span class="lbl" id="bgLbl">רקע רפואי</span>
           <div class="chips" id="bgChips" role="group" aria-labelledby="bgLbl"></div>
         </div>
-        <input id="bgExtra" class="field" type="text" autocomplete="off" placeholder="רקע נוסף: מחלות, תרופות קבועות" aria-label="רקע נוסף">
+        <div class="stack">
+          <input id="bgExtra" class="field" type="text" autocomplete="off" placeholder="רקע נוסף, למשל: אלרגיה לאבק" aria-label="רקע נוסף">
+          <p class="fine">המילה "ברקע." נוספת לבד בסוף. משפט שלם, כמו "אובחנה אוושה בלב בגיל 13.", מסיימים בנקודה ואז היא לא נוספת.</p>
+        </div>
         <div class="firstline">
-          <span class="lbl">השורה הראשונה בטופס</span>
+          <span class="lbl">השורה הראשונה</span>
           <output id="firstLine" class="firstline-text" aria-live="polite"></output>
+        </div>
+        <div class="hint-warn" id="sexHint" hidden>
+          <span>בתיאור מוזכרים לידה או הריון, אבל נבחר "בן".</span>
+          <button type="button" class="link" id="sexFix">להחליף ל"בת"</button>
         </div>
       </div>
 
       <div class="card">
-        <div class="h2row">
-          <h2><label for="story">מה קרה</label></h2>
-          <button type="button" class="link" id="example">מילוי דוגמה</button>
+        <div class="stack">
+          <h2><label for="reported">מה סופר לנו</label></h2>
+          <p class="fine">מה שלא ראינו בעצמנו: מה קרה לפני שהגענו, ומה המטופל מרגיש.</p>
         </div>
-        <textarea id="story" class="field" rows="4" placeholder="לדוגמה: נפגע בראש מאבן, חתך מדמם במצח, בהכרה מלאה, אביו במקום"></textarea>
+        <div class="stack">
+          <span class="lbl" id="srcLbl">לפי</span>
+          <div class="chips" id="srcChips" role="group" aria-labelledby="srcLbl"></div>
+          <input id="sourceOther" class="field" type="text" autocomplete="off" placeholder="למשל: השכנה" aria-label="מקור אחר" hidden>
+        </div>
+        <textarea id="reported" class="field" rows="3" placeholder="לדוגמה: נפלה על ראשו אבן מגובה נמוך, לא איבד הכרה, כואב לו הראש"></textarea>
+      </div>
+
+      <div class="card">
+        <div class="stack">
+          <h2><label for="observed">מה ראינו</label></h2>
+          <p class="fine">רשות. הממצאים העיקריים בהגעה. הכרה ו-ABC מסמנים בשלב הבא.</p>
+        </div>
+        <textarea id="observed" class="field" rows="2" placeholder="לדוגמה: חבלה קלה בקרקפת, הדימום נעצר, שריטות בצוואר"></textarea>
         <p class="fine">אפשר להכתיב בעזרת המיקרופון שבמקלדת. לא לכתוב שם, ת״ז, כתובת או טלפון של המטופל.</p>
       </div>
     </section>
@@ -327,34 +348,36 @@ select.field { padding-block: 8px; }
           <button type="button" class="link" id="qRegen" hidden>שאלות חדשות</button>
         </div>
         <div class="status" id="qStatus" role="status" aria-live="polite" hidden></div>
-        <p class="fine">שאלה שנשארת ריקה לא תיכתב בתיעוד. מסמנים רק מה שנבדק או בוצע בפועל.</p>
+        <p class="fine">מה שנשאר ריק לא ייכתב בתיעוד. מסמנים רק מה שנבדק או בוצע בפועל.</p>
       </div>
       <div id="qroot" class="step-panel">
         <div class="card skel" id="qSkel" hidden aria-hidden="true"><i></i><i></i><i></i><i></i></div>
         <section class="card qsec" id="sec-hx" hidden><h2>אנמנזה</h2><div class="qs"></div></section>
+        <section class="card" id="sec-general"><h2>מצב כללי בהגעה</h2><div class="fx" id="fxc-general"></div></section>
         <section class="card qsec" id="sec-exam" hidden><h2>בדיקה</h2><div class="qs"></div></section>
+        <section class="card" id="sec-abc"><h2>ABC</h2><div class="fx" id="fxc-abc"></div></section>
         <section class="card" id="sec-vitals">
-          <div class="h2row"><h2>מדדים</h2><span class="fine">משאירים ריק מה שלא נמדד</span></div>
+          <div class="h2row"><h2>מדדים</h2><span class="fine">משאירים ריק מה שלא נמדד. באירוע אקוטי כדאי סט חוזר.</span></div>
           <div id="vitalsSets" class="vsets"></div>
           <button type="button" class="link" id="addVitals">+ סט מדדים חוזרים</button>
         </section>
         <section class="card qsec" id="sec-tx" hidden><h2>טיפול</h2><div class="qs"></div></section>
         <section class="card qsec" id="sec-more" hidden><h2>נוסף</h2><div class="qs"></div></section>
         <section class="card" id="sec-dispo">
-          <h2>סיום האירוע</h2>
-          <div class="chips" id="dispoChips" role="group" aria-label="סיום האירוע"></div>
-          <div id="destWrap" hidden>
-            <label class="lbl" for="dest">בית החולים</label>
-            <input id="dest" class="field" type="text" autocomplete="off" placeholder="לדוגמה: שערי צדק">
+          <h2>המשך טיפול ופינוי</h2>
+          <div class="chips" id="dispoChips" role="group" aria-label="המשך טיפול ופינוי"></div>
+          <div class="sub" id="evacWrap" hidden>
+            <div>
+              <label class="lbl" for="dest">בית החולים</label>
+              <input id="dest" class="field" type="text" autocomplete="off" placeholder="לדוגמה: שערי צדק">
+            </div>
+            <div class="chips" id="transportChips" role="group" aria-label="מהלך הפינוי"></div>
+            <input id="transportNote" class="field" type="text" autocomplete="off" placeholder="חריג או שינוי במהלך הפינוי, למשל: צירים כל כ-2 דקות" aria-label="חריג או שינוי במהלך הפינוי">
           </div>
-          <input id="dispoOther" class="field" type="text" autocomplete="off" placeholder="פירוט" aria-label="סיום האירוע, פירוט" hidden>
+          <input id="dispoOther" class="field" type="text" autocomplete="off" placeholder="פירוט" aria-label="המשך טיפול, פירוט" hidden>
           <div class="sub alert" id="refusalWrap" hidden>
             <span class="lbl" id="refLbl">סירוב לפינוי: מה נעשה</span>
             <div class="chips" id="refusalChips" role="group" aria-labelledby="refLbl"></div>
-          </div>
-          <div>
-            <span class="lbl" id="endLbl">מצב בסיום הטיפול</span>
-            <div class="chips" id="endChips" role="group" aria-labelledby="endLbl"></div>
           </div>
         </section>
         <section class="card" id="sec-notes">
@@ -366,9 +389,9 @@ select.field { padding-block: 8px; }
 
     <section class="step-panel" data-step="3" hidden>
       <div class="report-tools">
-        <div class="seg" id="styleSeg" role="group" aria-label="סגנון הטקסט">
-          <button type="button" class="chip" data-style="lines" aria-pressed="true">שורות לפי נושא</button>
-          <button type="button" class="chip" data-style="paragraph" aria-pressed="false">פסקה רציפה</button>
+        <div class="seg" id="styleSeg" role="group" aria-label="צורת הטקסט">
+          <button type="button" class="chip" data-style="lines" aria-pressed="true">שורה לכל חלק</button>
+          <button type="button" class="chip" data-style="paragraph" aria-pressed="false">פסקה אחת</button>
         </div>
         <button type="button" class="btn small" id="rRegen">ניסוח מחדש</button>
       </div>
@@ -384,7 +407,7 @@ select.field { padding-block: 8px; }
           <h2>הגדרות AI</h2>
           <button type="button" class="link" id="setClose">סגירה</button>
         </div>
-        <p class="fine">הדף עובד גם בלי AI. עם מפתח API מחשבון אישי, השאלות מותאמות לסוג האירוע והטקסט מנוסח בשפה מקצועית.</p>
+        <p class="fine">הדף עובד גם בלי AI. עם מפתח API מחשבון פרטי, השאלות מותאמות לסוג האירוע והטקסט מנוסח בשפה מקצועית.</p>
         <div>
           <label class="lbl" for="setProvider">ספק</label>
           <select id="setProvider" class="field">
@@ -465,7 +488,7 @@ select.field { padding-block: 8px; }
   }
 
   /* ---------- constants ---------- */
-  const DRAFT_KEY = 'ems-doc-draft-v1';
+  const DRAFT_KEY = 'ems-doc-draft-v2';
   const AI_KEY = 'ems-doc-ai-v1';
   const STYLE_KEY = 'ems-doc-style-v1';
   const DRAFT_TTL_MS = 12 * 60 * 60 * 1000;
@@ -480,9 +503,49 @@ select.field { padding-block: 8px; }
   ];
   const KINDS = new Set(['choice', 'multi', 'number', 'text']);
 
-  const BG_CHIPS = ['בריא בדרך כלל', 'רקע לא ידוע', 'יל״ד', 'סוכרת', 'מחלת לב', 'קוצב לב', 'אסטמה', 'COPD', 'אפילפסיה', 'נוגדי קרישה', 'דמנציה', 'הריון'];
-  const BG_EXCLUSIVE = new Set(['בריא בדרך כלל', 'רקע לא ידוע']);
-  const BG_FEMALE_ONLY = new Set(['הריון']);
+  // Labels: m for a male patient, f for a female patient (when different).
+  const BG = [
+    { k: 'healthy', m: 'בריא בדרך כלל', f: 'בריאה בדרך כלל', exclusive: true },
+    { k: 'unknown', m: 'רקע רפואי לא ידוע', exclusive: true },
+    { k: 'htn', m: 'לחץ דם גבוה' },
+    { k: 'dm', m: 'סוכרת' },
+    { k: 'heart', m: 'מחלת לב' },
+    { k: 'pacer', m: 'קוצב לב' },
+    { k: 'asthma', m: 'אסטמה' },
+    { k: 'copd', m: 'COPD' },
+    { k: 'epilepsy', m: 'אפילפסיה' },
+    { k: 'anticoag', m: 'טיפול בנוגדי קרישה' },
+    { k: 'dementia', m: 'דמנציה' },
+  ];
+  const SOURCES = [
+    { k: 'patient', m: 'המטופל', f: 'המטופלת', say: 'לדבריו', sayF: 'לדבריה' },
+    { k: 'family', m: 'בני המשפחה', say: 'לדברי בני המשפחה' },
+    { k: 'bystanders', m: 'עוברים ושבים', say: 'לדברי עוברים ושבים' },
+  ];
+  // Fixed chip groups: [key, male label, female label].
+  const FIXED = {
+    general: [
+      { id: 'loc', label: 'הכרה', single: true, other: true, required: 'הכרה',
+        opts: [['full', 'בהכרה מלאה'], ['confused', 'מבולבל', 'מבולבלת'], ['voice', 'מגיב לקול', 'מגיבה לקול'], ['pain', 'מגיב לכאב', 'מגיבה לכאב'], ['none', 'לא מגיב', 'לא מגיבה']] },
+      { id: 'alert', label: 'חיוניות והתמצאות', single: false,
+        opts: [['vital', 'חיוני', 'חיונית'], ['oriented', 'מתמצא בזמן ובמקום', 'מתמצאת בזמן ובמקום'], ['disoriented', 'לא מתמצא', 'לא מתמצאת']] },
+      { id: 'posture', label: 'תנוחה', single: true, place: 'איפה? למשל: על הספה',
+        opts: [['sit', 'ישוב', 'ישובה'], ['lie', 'שוכב', 'שוכבת'], ['stand', 'עומד', 'עומדת'], ['walk', 'מתהלך', 'מתהלכת']] },
+    ],
+    abc: [
+      { id: 'a', label: 'A · נתיב אוויר', single: true, other: true, required: 'נתיב אוויר',
+        opts: [['ok', 'ללא איום על נתיב אוויר'], ['threat', 'איום על נתיב אוויר']] },
+      { id: 'b', label: 'B · נשימה', single: true, other: true, required: 'נשימה',
+        opts: [['ok', 'ללא קושי נשימתי'], ['mild', 'מצוקה נשימתית קלה'], ['moderate', 'מצוקה נשימתית בינונית'], ['severe', 'מצוקה נשימתית קשה']] },
+      { id: 'o2', label: 'חמצן', single: true,
+        opts: [['no', 'ללא צורך בחמצן'], ['yes', 'ניתן חמצן']] },
+      { id: 'c', label: 'C · המודינמיקה', single: true, other: true, required: 'המודינמיקה',
+        opts: [['stable', 'יציב המודינמית', 'יציבה המודינמית'], ['unstable', 'לא יציב המודינמית', 'לא יציבה המודינמית']] },
+      { id: 'pulse', label: 'דופק', single: true,
+        opts: [['regular', 'דופק סדיר'], ['irregular', 'דופק לא סדיר']] },
+    ],
+  };
+  const FIXED_BY_ID = Object.fromEntries(Object.values(FIXED).flat().map(g => [g.id, g]));
 
   const VITALS = [
     { k: 'hr', name: 'דופק', unit: 'לד״ק' },
@@ -498,52 +561,64 @@ select.field { padding-block: 8px; }
   const RANGES = { hr: [0, 300], sys: [0, 300], dia: [0, 200], rr: [0, 80], spo2: [0, 100], bgl: [0, 1500], gcs: [3, 15], pain: [0, 10], temp: [25, 45] };
   const INTEGER_ONLY = new Set(['gcs', 'pain']);
 
-  // m / f: label for a male / female patient.
   const DISPO = [
-    { k: 'hospital', m: 'פונה באמבולנס לבית חולים', f: 'פונתה באמבולנס לבית חולים' },
+    { k: 'evac', m: 'פינינו לבית חולים' },
     { k: 'mda', m: 'הועבר לצוות מד״א', f: 'הועברה לצוות מד״א' },
     { k: 'als', m: 'הועבר לצוות ALS / נט״ן', f: 'הועברה לצוות ALS / נט״ן' },
+    { k: 'self', m: 'יפנה עצמאית לקופ״ח או למוקד', f: 'תפנה עצמאית לקופ״ח או למוקד' },
+    { k: 'home', m: 'נשאר בבית', f: 'נשארה בבית' },
     { k: 'refused', m: 'סירב לפינוי', f: 'סירבה לפינוי' },
-    { k: 'onsite', m: 'טופל במקום, ללא צורך בפינוי', f: 'טופלה במקום, ללא צורך בפינוי' },
+  ];
+  const TRANSPORT = [
+    { k: 'ok', m: 'ללא חריג במהלך הפינוי' },
+    { k: 'walked', m: 'עלה וירד עצמאית מהאמבולנס', f: 'עלתה וירדה עצמאית מהאמבולנס' },
+    { k: 'handover', m: 'העברנו דיווח לצוות המקבל' },
   ];
   const REFUSAL = [
     { k: 'lucid', m: 'צלול ומתמצא', f: 'צלולה ומתמצאת' },
-    { k: 'risks', m: 'הוסברו הסיכונים שבסירוב', f: 'הוסברו הסיכונים שבסירוב' },
+    { k: 'risks', m: 'הוסברו הסיכונים שבסירוב' },
     { k: 'understood', m: 'הבין את ההסבר', f: 'הבינה את ההסבר' },
     { k: 'signed', m: 'חתם על טופס סירוב', f: 'חתמה על טופס סירוב' },
     { k: 'nosign', m: 'סירב לחתום', f: 'סירבה לחתום' },
-    { k: 'doctor', m: 'הומלץ לפנות לרופא', f: 'הומלץ לפנות לרופא' },
+    { k: 'doctor', m: 'הומלץ לפנות לרופא' },
     { k: 'callback', m: 'הונחה להזעיק שוב בהחמרה', f: 'הונחתה להזעיק שוב בהחמרה' },
-    { k: 'witness', m: 'בנוכחות בן משפחה או עד', f: 'בנוכחות בן משפחה או עד' },
-  ];
-  const ENDSTATE = [
-    { k: 'stable', m: 'יציב', f: 'יציבה' },
-    { k: 'better', m: 'חל שיפור', f: 'חל שיפור' },
-    { k: 'same', m: 'ללא שינוי', f: 'ללא שינוי' },
-    { k: 'worse', m: 'חלה החמרה', f: 'חלה החמרה' },
+    { k: 'witness', m: 'בנוכחות בן משפחה או עד' },
   ];
 
   // Used when no AI is configured or the AI call fails.
   const BASIC_QUESTIONS = [
     { id: 'onset', section: 'hx', q: 'זמן התחלה או האירוע', kind: 'text' },
-    { id: 'mechanism', section: 'hx', q: 'מנגנון ונסיבות', kind: 'text' },
-    { id: 'complaints', section: 'hx', q: 'תלונות', kind: 'text' },
-    { id: 'loc', section: 'hx', q: 'אובדן הכרה', kind: 'choice', options: ['לא', 'כן', 'לא ידוע'] },
+    { id: 'loc_history', section: 'hx', q: 'אובדן הכרה', kind: 'choice', options: ['לא', 'כן', 'לא ידוע'] },
     { id: 'meds', section: 'hx', q: 'תרופות קבועות', kind: 'text' },
     { id: 'allergies', section: 'hx', q: 'רגישויות', kind: 'choice', options: ['ללא רגישויות ידועות'] },
-    { id: 'avpu', section: 'exam', q: 'מצב הכרה', kind: 'choice', options: ['ער ומתמצא', 'מבולבל', 'מגיב לקול', 'מגיב לכאב', 'לא מגיב'] },
-    { id: 'breathing', section: 'exam', q: 'נתיב אוויר ונשימה', kind: 'choice', options: ['פתוח, נשימה תקינה', 'נשימה מאומצת', 'קולות נשימה חריגים'] },
     { id: 'pupils', section: 'exam', q: 'מצב אישונים', kind: 'choice', options: ['שווים ומגיבים לאור', 'לא שווים', 'לא מגיבים לאור'] },
     { id: 'skin', section: 'exam', q: 'מראה העור', kind: 'multi', options: ['ורוד וחם', 'חיוור', 'מזיע', 'כחלוני'] },
     { id: 'findings', section: 'exam', q: 'ממצאים נוספים בבדיקה', kind: 'text' },
-    { id: 'treatment', section: 'tx', q: 'טיפול שניתן', kind: 'multi', options: ['חמצן', 'עצירת דימום', 'חיטוי', 'חבישה', 'קיבוע', 'צווארון'] },
+    { id: 'treatment', section: 'tx', q: 'טיפול שביצענו', kind: 'multi', options: ['חמצן', 'עצירת דימום', 'חיטוי', 'חבישה', 'קיבוע', 'צווארון'] },
     { id: 'response', section: 'tx', q: 'תגובה לטיפול', kind: 'choice', options: ['שיפור', 'ללא שינוי', 'החמרה'] },
   ];
 
-  const EXAMPLE = {
-    sex: 'בן', age: '15', ageUnit: 'שנים', bg: ['בריא בדרך כלל'], bgExtra: '',
-    story: 'נפגע בראש מאבן שנזרקה לעברו. חתך מדמם במצח מעל הגבה הימנית. בהכרה מלאה, אביו במקום.',
-  };
+  // Invented calls written in the EMT's style. They teach tone and order only.
+  // Parts: opening line, reported history, findings and treatment, ABC, what happened next.
+  const STYLE_EXAMPLES = [
+    ['בת 28, אסטמה ברקע.', '',
+      'בהכרה מלאה, חיונית. הריון 2, לידה 2, שבוע 38, עובר 1, מצג ראש, מהלך הריון תקין. GBS שלילי. ירידת מים לפני כשעה, מים צלולים. צירים כל כ-4 דקות למשך כדקה.', '',
+      'במהלך הפינוי צירים כל כ-3 דקות. פינינו לבית החולים שערי צדק, ללא חריג במהלך הפינוי.'],
+    ['בן 9, בריא בדרך כלל.',
+      'לדבריו, נפל מהמגלשה בגן השעשועים ונחבל בסנטר. לא איבד הכרה.',
+      'בהגיענו למקום, בהכרה מלאה, חיוני, מתמצא בזמן ובמקום, ישוב על הספסל, אישונים שווים. חתך של כ-2 ס״מ בסנטר, הדימום נעצר. ביצענו חיטוי וחבישה.', '',
+      'לדברי האם, יפנו עצמאית למוקד הרפואי הקרוב.'],
+    ['בת 82, לחץ דם גבוה וסוכרת ברקע.',
+      'לדברי בני המשפחה, מעדה בסלון ונפלה על צד שמאל. לא איבדה הכרה.',
+      'בהגיענו למקום, בהכרה מלאה, חיונית, מתמצאת בזמן ובמקום, שוכבת על הרצפה. מתלוננת על כאב בירך שמאל, קיצור וסיבוב חיצוני של רגל שמאל. ביצענו קיבוע והעברנו אותה על משטח גלילה.',
+      'ללא איום על נתיב אוויר. ללא קושי נשימתי. יציבה המודינמית.',
+      'פינינו לבית החולים הדסה עין כרם, ללא חריג במהלך הפינוי. העברנו דיווח על כלל הממצאים לאחות המקבלת.'],
+    ['בן 55, מחלת לב ברקע.',
+      'לדבריו, כאב לוחץ במרכז החזה מזה כשעה, מקרין לזרוע שמאל, מלווה בהזעה.',
+      'בהגיענו למקום, בהכרה מלאה, חיוני, ישוב על הכורסה, חיוור ומזיע.',
+      'ללא איום על נתיב אוויר. מצוקה נשימתית קלה, ללא צורך בחמצן. יציב המודינמית. דופק 96, ל״ד 150/90, סטורציה 97%.',
+      'הועבר לצוות ALS להמשך טיפול ופינוי.'],
+  ];
 
   const PROVIDERS = {
     openai: {
@@ -556,17 +631,19 @@ select.field { padding-block: 8px; }
     },
     anthropic: {
       label: 'Anthropic (Claude)', short: 'Claude', model: 'claude-opus-5-5', keyHost: 'console.anthropic.com/settings/keys',
-      note: 'בתשלום לפי שימוש. מפתח מחשבון אישי, לא מחשבון של העבודה. לפי מדיניות Anthropic, תוכן שנשלח דרך ה-API לא משמש לאימון מודלים כברירת מחדל.',
+      note: 'בתשלום לפי שימוש. מפתח מחשבון פרטי, לא מחשבון של העבודה. לפי מדיניות Anthropic, תוכן שנשלח דרך ה-API לא משמש לאימון מודלים כברירת מחדל.',
     },
   };
 
   /* ---------- case state and draft ---------- */
-  const blankVitals = () => ({ time: '', hr: '', sys: '', dia: '', rr: '', spo2: '', bgl: '', gcs: '', pain: '', temp: '' });
+  const blankVitals = () => ({ time: '', transit: false, hr: '', sys: '', dia: '', rr: '', spo2: '', bgl: '', gcs: '', pain: '', temp: '' });
   const blankAnswer = () => ({ sel: [], other: '', value: '' });
   const blankCase = () => ({
-    step: 1, sex: '', age: '', ageUnit: 'שנים', bg: [], bgExtra: '', story: '',
+    step: 1, sex: '', age: '', ageUnit: 'שנים', bg: [], bgExtra: '',
+    sources: [], sourceOther: '', reported: '', observed: '',
     caseType: '', questions: [], answers: {}, qSource: '', qSig: '',
-    vitals: [blankVitals()], dispo: [], dest: '', dispoOther: '', refusal: [], endState: '', notes: '',
+    fx: {}, fxText: {}, vitals: [blankVitals()],
+    dispo: [], dest: '', transport: [], transportNote: '', dispoOther: '', refusal: [], notes: '',
     style: 'lines', report: '', reportSig: '', reportSource: '', reportEdited: false, savedAt: 0,
   });
   let S = blankCase();
@@ -585,6 +662,7 @@ select.field { padding-block: 8px; }
   }
   function loadDraft() {
     try {
+      localStorage.removeItem('ems-doc-draft-v1');
       const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
       if (!d || typeof d !== 'object') return null;
       if (!(Date.now() - Number(d.savedAt || 0) < DRAFT_TTL_MS)) { clearDraft(); return null; }
@@ -608,6 +686,7 @@ select.field { padding-block: 8px; }
       if (!Array.isArray(a.sel)) a.sel = [];
       b.answers[q.id] = a;
     }
+    for (const id of Object.keys(b.fx)) if (!Array.isArray(b.fx[id])) delete b.fx[id];
     if (![1, 2, 3].includes(b.step)) b.step = 1;
     return b;
   }
@@ -723,7 +802,12 @@ select.field { padding-block: 8px; }
 
   /* ---------- text builders ---------- */
   const isFemale = () => S.sex === 'בת';
-  const g = (o) => (isFemale() ? o.f : o.m);
+  const g = (o) => (isFemale() && o.f ? o.f : o.m);
+  const optLabel = (o) => (isFemale() && o[2] ? o[2] : o[1]);
+  const sentence = (s) => {
+    const t = String(s || '').trim();
+    return !t ? '' : /[.!?]$/.test(t) ? t : t + '.';
+  };
 
   function ageText() {
     const n = String(S.age || '').trim();
@@ -739,20 +823,51 @@ select.field { padding-block: 8px; }
     const and = /^[A-Za-z0-9]/.test(last) ? 'ו-' : 'ו';
     return items.slice(0, -1).join(', ') + ' ' + and + last;
   }
+  // Background clause, always closed with a period; disease lists end in "ברקע".
   function bgText() {
-    const chips = BG_CHIPS.filter(x => S.bg.includes(x));
+    const chips = BG.filter(b => S.bg.includes(b.k));
     const extra = String(S.bgExtra || '').trim();
-    if (chips.length && BG_EXCLUSIVE.has(chips[0])) return [chips[0], extra].filter(Boolean).join(', ');
-    const items = extra ? chips.concat(extra) : chips;
-    if (!items.length) return '';
-    const joined = heJoin(items);
-    return /רקע|בריא/.test(joined) ? joined : joined + ' ברקע';
+    const excl = chips.find(b => b.exclusive);
+    if (excl) return sentence([g(excl), extra.replace(/\.$/, '')].filter(Boolean).join(', '));
+    const isSentence = /\.$/.test(extra);
+    const items = chips.map(g);
+    if (extra && !isSentence) items.push(extra);
+    const out = [];
+    if (items.length) {
+      let joined = heJoin(items);
+      if (!/ברקע$|בריא/.test(joined)) joined += ' ברקע';
+      out.push(joined + '.');
+    }
+    if (isSentence) out.push(extra);
+    return out.join(' ');
   }
   function firstLine() {
     const head = [S.sex, ageText()].filter(Boolean).join(' ');
-    return [head, bgText()].filter(Boolean).join(', ');
+    const bg = bgText();
+    return bg ? head + ', ' + bg : sentence(head);
   }
-  const caseSig = () => JSON.stringify([firstLine(), S.story.trim()]);
+  function attributions() {
+    const out = [];
+    for (const s of SOURCES) if (S.sources.includes(s.k)) out.push(isFemale() && s.sayF ? s.sayF : s.say);
+    const other = S.sourceOther.trim().replace(/^לדברי\s*/, '');
+    if (S.sources.includes(OTHER) && other) out.push('לדברי ' + other);
+    return out;
+  }
+  const caseSig = () => JSON.stringify([firstLine(), attributions(), S.reported.trim(), S.observed.trim()]);
+
+  function fxValues(grp) {
+    const sel = S.fx[grp.id] || [];
+    const vals = grp.opts.filter(o => sel.includes(o[0])).map(optLabel);
+    const txt = String(S.fxText[grp.id] || '').trim();
+    if (grp.other && sel.includes(OTHER) && txt) vals.push(txt);
+    if (grp.place && txt) {
+      if (vals.length) vals[vals.length - 1] += ' ' + txt;
+      else vals.push(txt);
+    }
+    return vals;
+  }
+  const generalText = () => FIXED.general.flatMap(fxValues).join(', ');
+  const abcParts = () => FIXED.abc.map(grp => fxValues(grp).join(', ')).filter(Boolean);
 
   function isAnswered(q) {
     const a = S.answers[q.id];
@@ -785,78 +900,101 @@ select.field { padding-block: 8px; }
     if (t(v.temp)) parts.push('חום ' + t(v.temp));
     return parts.join(', ');
   }
+  function vitalsLabel(v, i) {
+    const name = i === 0 ? 'מדדים ראשונים' : v.transit ? 'מדדים חוזרים במהלך הפינוי' : 'מדדים חוזרים';
+    return name + (v.time ? ' (' + v.time + ')' : '');
+  }
   function vitalsLines() {
     return S.vitals.map((v, i) => {
       const t = vitalsText(v);
-      if (!t) return '';
-      return (i === 0 ? 'מדדים ראשונים' : 'מדדים חוזרים') + (v.time ? ' (' + v.time + ')' : '') + ': ' + t;
+      return t ? vitalsLabel(v, i) + ': ' + t : '';
     }).filter(Boolean);
+  }
+  function destText() {
+    const d = S.dest.trim();
+    if (!d) return 'פינינו לבית חולים';
+    return 'פינינו ל' + (/^(בית החולים|בית חולים|בי״ח|ביה״ח|בי"ח|ביה"ח)/.test(d) ? d : 'בית החולים ' + d);
   }
   function dispoTexts() {
     const out = [];
     for (const d of DISPO) {
       if (!S.dispo.includes(d.k)) continue;
-      out.push(d.k === 'hospital' && S.dest.trim() ? g(d) + ': ' + S.dest.trim() : g(d));
+      if (d.k !== 'evac') { out.push(g(d)); continue; }
+      out.push(destText());
+      for (const t of TRANSPORT) if (S.transport.includes(t.k)) out.push(g(t));
+      if (S.transportNote.trim()) out.push('במהלך הפינוי: ' + S.transportNote.trim());
     }
-    if (S.dispo.includes('other') && S.dispoOther.trim()) out.push(S.dispoOther.trim());
+    if (S.dispo.includes(OTHER) && S.dispoOther.trim()) out.push(S.dispoOther.trim());
     if (S.dispo.includes('refused')) {
       const r = REFUSAL.filter(x => S.refusal.includes(x.k)).map(g);
       if (r.length) out.push('בסירוב: ' + r.join(', '));
     }
-    const e = ENDSTATE.find(x => x.k === S.endState);
-    if (e) out.push('מצב בסיום הטיפול: ' + g(e));
     return out;
   }
-  // Only answered items reach the facts, so the AI cannot document what was not reported.
+  // Only what the EMT entered or marked reaches the facts, so the AI cannot document anything else.
   function buildFacts() {
-    const lines = ['תיאור המקרה במילות החובש: ' + S.story.trim()];
+    const L = [];
+    const att = attributions();
+    if (S.reported.trim()) {
+      L.push('מה סופר לצוות (לא נצפה על ידינו). ' + (att.length ? 'ייחוס: ' + heJoin(att) : 'מקור לא צוין') + ':');
+      L.push(S.reported.trim());
+    }
+    if (S.observed.trim()) L.push('', 'מה הצוות ראה בהגעה:', S.observed.trim());
+    const gen = generalText();
+    if (gen) L.push('', 'מצב כללי בהגעה: ' + gen);
     for (const s of SECTIONS) {
       const items = S.questions.filter(q => q.section === s.key && isAnswered(q)).map(q => '- ' + q.q + ': ' + answerText(q));
-      if (items.length) lines.push('', s.name + ':', ...items);
+      if (items.length) L.push('', s.name + ':', ...items);
     }
+    const abc = abcParts();
+    if (abc.length) L.push('', 'ABC: ' + abc.join('; '));
     const v = vitalsLines();
-    if (v.length) lines.push('', 'מדדים:', ...v.map(x => '- ' + x));
+    if (v.length) L.push('', 'מדדים:', ...v.map(x => '- ' + x));
     const d = dispoTexts();
-    if (d.length) lines.push('', 'סיום האירוע:', ...d.map(x => '- ' + x));
-    if (S.notes.trim()) lines.push('', 'פרטים נוספים: ' + S.notes.trim());
-    return lines.join('\n');
+    if (d.length) L.push('', 'המשך טיפול ופינוי:', ...d.map(x => '- ' + x));
+    if (S.notes.trim()) L.push('', 'פרטים נוספים: ' + S.notes.trim());
+    return L.join('\n').trim();
   }
   function basicReport() {
-    const out = [firstLine(), S.story.trim()];
-    for (const s of SECTIONS) {
-      const items = S.questions.filter(q => q.section === s.key && isAnswered(q)).map(q => q.q + ': ' + answerText(q));
-      if (items.length) out.push(s.name + ': ' + items.join('; ') + '.');
-    }
-    for (const v of vitalsLines()) out.push(v + '.');
-    const d = dispoTexts();
-    if (d.length) out.push('סיום: ' + d.join('; ') + '.');
-    if (S.notes.trim()) out.push(S.notes.trim());
-    return out.filter(Boolean).join('\n');
+    const qa = (key) => S.questions.filter(q => q.section === key && isAnswered(q)).map(q => sentence(q.q + ': ' + answerText(q)));
+    const att = attributions();
+    const told = S.reported.trim();
+    const p2 = [told ? sentence((att.length && !/^לדברי/.test(told) ? heJoin(att) + ', ' : '') + told) : '', ...qa('hx')];
+    const gen = generalText();
+    const p3 = [gen ? sentence('בהגיענו למקום, ' + gen) : '', sentence(S.observed), ...qa('exam'), ...qa('more'), ...qa('tx')];
+    const first = S.vitals[0] && vitalsText(S.vitals[0]);
+    const p4 = [...abcParts().map(sentence), first ? sentence(first) : ''];
+    const later = S.vitals.slice(1).map((v, i) => (vitalsText(v) ? sentence(vitalsLabel(v, i + 1) + ': ' + vitalsText(v)) : ''));
+    const p5 = [...dispoTexts().map(sentence), ...later, sentence(S.notes)];
+    const parts = [p2, p3, p4, p5].map(p => p.filter(Boolean).join(' ')).filter(Boolean);
+    return [firstLine(), ...parts].join(S.style === 'paragraph' ? ' ' : '\n');
   }
   const reportSig = () => JSON.stringify([firstLine(), buildFacts(), S.style]);
 
   function buildQuestionsPrompt() {
+    const att = attributions();
     return [
       'You are helping an Israeli volunteer EMT (BLS level) complete the documentation of a medical call that just ended. The documentation must be complete and legally defensible. EMTs often forget to record things they did check, such as pupils after a head injury or contraction timing in labor.',
       '',
       'CASE',
       'Patient: ' + firstLine(),
-      "The EMT's short description: " + S.story.trim(),
+      'Reported to the team' + (att.length ? ' (' + att.join(', ') + ')' : '') + ', not seen by the team: ' + (S.reported.trim() || '-'),
+      'Seen by the team on arrival: ' + (S.observed.trim() || '-'),
       '',
       'TASK',
       'List the follow-up items this EMT should answer so the documentation of THIS case is complete.',
       '- 6 to 16 items; fewer for a simple case. Within each section, put the most important first.',
-      '- Skip anything the description already answers.',
-      '- Do not ask about vital signs (pulse, blood pressure, breathing rate, saturation, glucose, GCS, pain score, temperature) or about evacuation, handover or refusal: the app has fixed fields for those. Case-specific measurements are fine (for example fetal movements or the duration of a seizure).',
+      '- Skip anything the case text already answers.',
+      '- Do not ask about these; the app has fixed fields for them: vital signs; the general state on arrival (consciousness, alertness, orientation, posture); the ABC summary (airway threat, breathing difficulty, oxygen need, hemodynamic stability, pulse regularity); evacuation, transport, handover or refusal; who reported the history. Case-specific measurements are fine (for example contraction interval, or the duration of a seizure).',
       '- Cover what applies to this case: history and mechanism (onset time, SAMPLE / OPQRST elements, regular medications, allergies, anticoagulants after trauma or bleeding), case-specific examination findings, treatment given within BLS scope, and safety items (for example cervical spine assessment, or who stayed with a minor).',
       '- Ask about what the EMT observed and did. Never imply that something was found or done.',
       '- Do not add "אחר" or "לא נבדק" options: the app adds a free-text field, and an unanswered item means it was not checked.',
-      '- Hebrew only, with the terminology of Israeli EMS. Labels are short noun phrases of 2-5 words (for example "מצב אישונים", "אובדן הכרה"), not questions. Options are 1-4 words, at most 6 per item.',
-      '- If the description contains names, ID numbers, addresses or phone numbers, do not repeat them.',
+      '- Hebrew only, with the terms Israeli EMTs use in reports. Labels are short noun phrases of 2-5 words (for example "מצב אישונים", "אובדן הכרה"), not questions. Options are 1-4 words, at most 6 per item.',
+      '- If the case text contains names, ID numbers, addresses or phone numbers, do not repeat them.',
       '',
       'Depth examples:',
-      '- Head injury: pupils, loss of consciousness, amnesia, vomiting, headache, anticoagulants, cervical spine, wound location and size, bleeding control, disinfection, dressing.',
-      '- Labor: gestational week, gravida/para, contraction interval and duration, rupture of membranes (time, color), bleeding, urge to push, crowning, fetal movements, pregnancy follow-up and risk, previous cesarean.',
+      '- Head injury: pupils (equal, reactive), loss of consciousness, amnesia, vomiting, headache, anticoagulants, cervical spine, wound location and size, whether the bleeding stopped, disinfection (with what), dressing.',
+      '- Labor: pregnancy and birth number (written "הריון X, לידה X"), gestational week, number of fetuses, presentation (מצג), course of pregnancy, GBS, rupture of membranes (time, color), bleeding, contraction interval and duration, urge to push, crowning, fetal movements, referral or clinic follow-up, previous cesarean.',
       '',
       'OUTPUT',
       'Return only a JSON object and nothing else:',
@@ -873,32 +1011,51 @@ select.field { padding-block: 8px; }
     ].join('\n');
   }
   function buildReportPrompt() {
-    const style = S.style === 'paragraph'
-      ? 'Write ONE flowing paragraph without labels, in this order: history and what happened, examination findings, vital signs, treatment, disposition.'
-      : 'Write short lines, each starting with its label, in this order, and leave out a line that has no facts:\nאנמנזה: ...\nבבדיקה: ...\nמדדים: ...\nטיפול: ...\nסיום: ...';
+    const lines = S.style !== 'paragraph';
+    const female = isFemale();
+    const examples = STYLE_EXAMPLES.map(p => p.filter(Boolean).join(lines ? '\n' : ' ')).join('\n\n');
     return [
-      'You are writing the free-text section of a medical call report for an Israeli volunteer EMT (BLS level). Write in Hebrew.',
+      "You write the free-text narrative of a medical call report for an Israeli volunteer EMT, in Hebrew, in the EMT's own style.",
       '',
-      'This is a legal medical record. Hard rules:',
-      '1. Use ONLY the facts below. Never add a finding, measurement, treatment, time, quote or detail that is not in them. Never call something normal unless the facts say so. Anything not in the facts is left out; do not write that it was not checked.',
-      '2. Keep every number and unit exactly as given.',
-      '3. Register: concise, factual Israeli EMS documentation in the past tense ("בהגעתנו", "בבדיקה", "ללא", "בוצע", "הועבר לצוות"). No diagnosis or opinion beyond what the facts state; a suspicion the EMT wrote stays "חשד ל...".',
-      '4. Attribute history to a source ("לדבריו", "לדברי עדים") only when the facts name the source.',
-      '5. The patient is ' + (isFemale() ? 'female: use feminine grammatical forms.' : 'male: use masculine grammatical forms.'),
-      '6. No personal identifiers (names, ID numbers, addresses, phone numbers), even if they appear in the facts.',
-      '7. The app adds the opening line "' + firstLine() + '" itself. Do not repeat it; start directly with the body.',
-      '8. ' + style,
+      'STRUCTURE, in this order. Leave out a part that has no facts:',
+      '1. The opening line "' + firstLine() + '" is written by the app. Do not write it.',
+      '2. What was reported to the team (events before arrival, what the patient feels). Open with the attribution given in the facts, for example "' + (female ? 'לדבריה' : 'לדבריו') + '," or "לדברי עוברים ושבים,". If the facts give no source, write it without attribution. History answers (onset, medications, allergies) belong here too.',
+      '3. What the team found and did: open with "בהגיענו למקום," and the general state on arrival (for example "בהכרה מלאה, ' + (female ? 'חיונית, מתמצאת בזמן ובמקום, ישובה' : 'חיוני, מתמצא בזמן ובמקום, ישוב') + ' על הספה"), then the examination findings, then the treatment ("ביצענו ...").',
+      '4. A short ABC line built only from the ABC facts, for example "ללא איום על נתיב אוויר. ללא קושי נשימתי. ' + (female ? 'יציבה' : 'יציב') + ' המודינמית." The first set of vital signs can follow it.',
+      '5. What happened next: evacuation and destination ("פינינו לבית החולים ..."), how the transport went ("ללא חריג במהלך הפינוי", or what changed), vital signs taken during transport, handover ("העברנו דיווח ... לצוות המקבל"), or a handover to another team, self-referral, staying home, or refusal.',
       '',
-      'Reply with the report body only: no title, no Markdown, no code fence, no comments before or after.',
+      'FORMAT: ' + (lines ? 'each of parts 2-5 on its own line.' : 'parts 2-5 together in one paragraph.') + ' No labels, headings, bullets or blank lines.',
+      '',
+      'HARD RULES (this is a legal medical record):',
+      '- Use only the facts below. Never add a finding, measurement, treatment, time, place or detail that is not in them, and never describe something as normal unless the facts say so. Anything missing is left out; do not write that it was not checked.',
+      '- Keep every number and unit exactly as given. Write vital signs compactly, for example "דופק 92, ל״ד 125/80, סטורציה 98%".',
+      '- Team voice: first person plural, past tense ("בהגיענו", "ביצענו", "פינינו", "העברנו"). Short, factual sentences in professional Israeli EMS Hebrew. Polish wording, spelling and terminology so the text reads a little more professional than the examples, without adding content.',
+      '- The patient is ' + (female ? 'female: use feminine forms (לדבריה, חיונית, מתמצאת, יציבה).' : 'male: use masculine forms (לדבריו, חיוני, מתמצא, יציב).'),
+      '- No diagnosis or opinion beyond the facts; a suspicion the EMT wrote stays "חשד ל...".',
+      '- No personal identifiers (names, ID numbers, addresses, phone numbers).',
+      '- The examples are other, invented calls. Use them for tone and order only, and never copy a detail from them.',
+      '',
+      'STYLE EXAMPLES (full texts, including the opening line the app writes):',
+      examples,
+      '',
+      'Reply with parts 2-5 only: no opening line, title, Markdown or comments.',
       '',
       'FACTS',
       buildFacts(),
     ].join('\n');
   }
-  function composeReport(head, text) {
-    let body = String(text || '').replace(/```[a-zA-Z]*\n?/g, '').replace(/\*\*/g, '').replace(/^#+\s*/gm, '').trim();
-    if (head && body.startsWith(head)) body = body.slice(head.length).replace(/^[\s.,]+/, '');
-    return body ? head + '\n' + body : head;
+  function composeReport(head, text, style) {
+    let body = String(text || '')
+      .replace(/```[a-zA-Z]*\n?/g, '')
+      .replace(/\*\*/g, '')
+      .replace(/^#+\s*/gm, '')
+      .replace(/^\s*[-•]\s+/gm, '')
+      .trim();
+    const bare = head.replace(/\.$/, '');
+    if (bare && body.startsWith(bare)) body = body.slice(bare.length).replace(/^[\s.,]+/, '');
+    body = style === 'paragraph' ? body.replace(/\s*\n+\s*/g, ' ') : body.replace(/\n\s*\n+/g, '\n');
+    if (!body) return head;
+    return head + (style === 'paragraph' ? ' ' : '\n') + body;
   }
   function parseJsonLoose(t) {
     const s = String(t || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
@@ -990,80 +1147,114 @@ select.field { padding-block: 8px; }
     if (CONFIG_ERRORS.has(e.code)) acts.push({ act: 'settings', label: 'הגדרות AI' });
     return acts;
   }
+  function flashTarget(id) {
+    const t = document.getElementById(id);
+    if (!t) return;
+    t.scrollIntoView({ block: 'center' });
+    t.classList.remove('flash');
+    void t.offsetWidth;
+    t.classList.add('flash');
+    const f = t.querySelector('button, input, textarea');
+    if (f) f.focus({ preventScroll: true });
+  }
 
   /* ---------- step 1: the case ---------- */
   function buildBgChips() {
     const box = $('#bgChips');
     box.textContent = '';
-    for (const label of BG_CHIPS) {
-      if (BG_FEMALE_ONLY.has(label) && !isFemale()) continue;
-      box.append(chip(label, S.bg.includes(label), { bg: label }));
-    }
+    for (const b of BG) box.append(chip(g(b), S.bg.includes(b.k), { bg: b.k }));
+  }
+  function buildSourceChips() {
+    const box = $('#srcChips');
+    box.textContent = '';
+    for (const s of SOURCES) box.append(chip(g(s), S.sources.includes(s.k), { src: s.k }));
+    box.append(chip('אחר…', S.sources.includes(OTHER), { src: OTHER }));
+    $('#sourceOther').hidden = !S.sources.includes(OTHER);
   }
   function updateFirstLine() {
     const out = $('#firstLine');
     const ready = !!(S.sex && String(S.age).trim());
-    out.textContent = ready ? firstLine() : 'בוחרים מין וגיל, והשורה נבנית כאן';
+    out.textContent = ready ? firstLine() : 'בוחרים בן או בת וגיל, והשורה נבנית כאן';
     out.classList.toggle('empty', !ready);
   }
-  function updateExampleBtn() { $('#example').hidden = !!(S.story.trim() || S.age || S.sex); }
+  const FEMALE_CONTEXT = /צירים|יולדת|לידה|הריון|בהריון|ירידת מים|מי שפיר|GBS|שבוע\s*\d/i;
+  function updateSexHint() {
+    const text = [S.reported, S.observed, S.bgExtra].join(' ');
+    $('#sexHint').hidden = !(S.sex === 'בן' && FEMALE_CONTEXT.test(text));
+  }
   function renderStep1() {
     syncPressed($('#sexSeg'), b => b.dataset.sex === S.sex);
     $('#age').value = S.age;
     $('#ageUnit').value = S.ageUnit;
     buildBgChips();
+    buildSourceChips();
     $('#bgExtra').value = S.bgExtra;
-    $('#story').value = S.story;
+    $('#sourceOther').value = S.sourceOther;
+    $('#reported').value = S.reported;
+    $('#observed').value = S.observed;
     updateFirstLine();
-    updateExampleBtn();
-    autogrow($('#story'));
+    updateSexHint();
+    autogrowIn($('main > .step-panel[data-step="1"]'));
+  }
+  // Every chip label depends on the patient's sex.
+  function setSex(v) {
+    S.sex = v;
+    syncPressed($('#sexSeg'), x => x.dataset.sex === S.sex);
+    buildBgChips(); buildSourceChips(); renderFixed(); buildDispo();
+    updateFirstLine(); updateSexHint(); hideBarMsg(); saveSoon();
   }
 
   $('#sexSeg').addEventListener('click', (ev) => {
     const b = ev.target.closest('[data-sex]');
-    if (!b) return;
-    S.sex = b.dataset.sex;
-    if (!isFemale()) S.bg = S.bg.filter(x => !BG_FEMALE_ONLY.has(x));
-    syncPressed($('#sexSeg'), x => x.dataset.sex === S.sex);
-    buildBgChips(); buildDispo(); updateFirstLine(); updateExampleBtn(); hideBarMsg(); saveSoon();
+    if (b) setSex(b.dataset.sex);
   });
+  $('#sexFix').addEventListener('click', () => setSex('בת'));
   $('#age').addEventListener('input', (ev) => {
     const v = ev.target.value.replace(/\D/g, '').slice(0, 3);
     if (v !== ev.target.value) ev.target.value = v;
     S.age = v;
-    updateFirstLine(); updateExampleBtn(); hideBarMsg(); saveSoon();
+    updateFirstLine(); hideBarMsg(); saveSoon();
   });
   $('#ageUnit').addEventListener('change', (ev) => { S.ageUnit = ev.target.value; updateFirstLine(); saveSoon(); });
   $('#bgChips').addEventListener('click', (ev) => {
     const b = ev.target.closest('[data-bg]');
     if (!b) return;
-    const v = b.dataset.bg;
-    const on = !S.bg.includes(v);
-    if (BG_EXCLUSIVE.has(v)) S.bg = on ? [v] : [];
-    else S.bg = on ? S.bg.filter(x => !BG_EXCLUSIVE.has(x)).concat(v) : S.bg.filter(x => x !== v);
+    const k = b.dataset.bg;
+    const on = !S.bg.includes(k);
+    const exclusive = BG.some(x => x.k === k && x.exclusive);
+    if (exclusive) S.bg = on ? [k] : [];
+    else S.bg = on ? S.bg.filter(x => !BG.some(y => y.k === x && y.exclusive)).concat(k) : S.bg.filter(x => x !== k);
     syncPressed($('#bgChips'), x => S.bg.includes(x.dataset.bg));
     updateFirstLine(); saveSoon();
   });
-  $('#bgExtra').addEventListener('input', (ev) => { S.bgExtra = ev.target.value; updateFirstLine(); saveSoon(); });
-  $('#story').addEventListener('input', (ev) => {
-    S.story = ev.target.value;
-    autogrow(ev.target); updateExampleBtn(); hideBarMsg(); saveSoon();
+  $('#bgExtra').addEventListener('input', (ev) => { S.bgExtra = ev.target.value; updateFirstLine(); updateSexHint(); saveSoon(); });
+  $('#srcChips').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-src]');
+    if (!b) return;
+    S.sources = toggleIn(S.sources, b.dataset.src);
+    syncPressed($('#srcChips'), x => S.sources.includes(x.dataset.src));
+    $('#sourceOther').hidden = !S.sources.includes(OTHER);
+    if (b.dataset.src === OTHER && S.sources.includes(OTHER)) $('#sourceOther').focus();
+    saveSoon();
   });
-  $('#example').addEventListener('click', () => {
-    Object.assign(S, JSON.parse(JSON.stringify(EXAMPLE)));
-    renderStep1(); buildDispo(); saveSoon();
-  });
+  $('#sourceOther').addEventListener('input', (ev) => { S.sourceOther = ev.target.value; saveSoon(); });
+  for (const id of ['reported', 'observed']) {
+    $('#' + id).addEventListener('input', (ev) => {
+      S[id] = ev.target.value;
+      autogrow(ev.target); updateSexHint(); hideBarMsg(); saveSoon();
+    });
+  }
   $('#toQuestions').addEventListener('click', () => {
     const missing = [];
-    if (!S.sex) missing.push('מין');
+    if (!S.sex) missing.push('בן או בת');
     if (!String(S.age).trim()) missing.push('גיל');
-    if (!S.story.trim()) missing.push('תיאור המקרה');
+    if (!S.reported.trim() && !S.observed.trim()) missing.push('מה סופר או מה ראינו');
     if (missing.length) { showBarMsg('חסר: ' + missing.join(', ')); return; }
     goStep(2);
     if (!S.questions.length || S.qSig !== caseSig()) generateQuestions();
   });
 
-  /* ---------- step 2: questions ---------- */
+  /* ---------- step 2: AI questions ---------- */
   function questionNode(q) {
     const a = S.answers[q.id];
     const labelId = 'ql-' + q.id;
@@ -1158,7 +1349,7 @@ select.field { padding-block: 8px; }
   function qStatus(kind, e) {
     const box = $('#qStatus');
     if (kind === 'loading') {
-      setStatus(box, { busy: true, text: 'ה-AI מכין שאלות לפי המקרה. בינתיים אפשר למלא מדדים.', actions: [{ act: 'stop', label: 'עצירה' }] });
+      setStatus(box, { busy: true, text: 'ה-AI מכין שאלות לפי המקרה. בינתיים אפשר לסמן הכרה, ABC ומדדים.', actions: [{ act: 'stop', label: 'עצירה' }] });
     } else if (kind === 'error') {
       setStatus(box, { tone: 'error', text: e.message, detail: e.detail, actions: errorActions(e, { act: 'basic', label: 'שאלות כלליות' }) });
     } else if (kind === 'stopped' || kind === 'idle') {
@@ -1263,6 +1454,58 @@ select.field { padding-block: 8px; }
     generateQuestions();
   });
 
+  /* ---------- step 2: general state and ABC ---------- */
+  function renderFixed() {
+    for (const [card, groups] of Object.entries(FIXED)) {
+      const box = $('#fxc-' + card);
+      box.textContent = '';
+      for (const grp of groups) {
+        const sel = S.fx[grp.id] || [];
+        const labelId = 'fxl-' + grp.id;
+        const wrap = h('div', { class: 'fx-group', id: 'fx-' + grp.id, 'data-g': grp.id });
+        wrap.append(h('span', { class: 'lbl', id: labelId, text: grp.label }));
+        const row = h('div', { class: 'chips', role: 'group', 'aria-labelledby': labelId });
+        for (const o of grp.opts) row.append(chip(optLabel(o), sel.includes(o[0]), { k: o[0] }));
+        if (grp.other) row.append(chip('אחר…', sel.includes(OTHER), { k: OTHER }));
+        wrap.append(row);
+        if (grp.other || grp.place) {
+          const inp = h('input', { type: 'text', class: 'field fx-text', autocomplete: 'off', placeholder: grp.place || 'פירוט', 'aria-label': grp.place ? grp.label + ', איפה' : grp.label + ', פירוט' });
+          inp.value = S.fxText[grp.id] || '';
+          if (grp.other) inp.hidden = !sel.includes(OTHER);
+          wrap.append(inp);
+        }
+        box.append(wrap);
+      }
+    }
+  }
+  function onFixedClick(ev) {
+    const b = ev.target.closest('.fx-group .chip');
+    if (!b) return;
+    const wrap = b.closest('.fx-group');
+    const grp = FIXED_BY_ID[wrap.dataset.g];
+    if (!grp) return;
+    const k = b.dataset.k;
+    const sel = S.fx[grp.id] || [];
+    const on = !sel.includes(k);
+    S.fx[grp.id] = grp.single ? (on ? [k] : []) : (on ? sel.concat(k) : sel.filter(x => x !== k));
+    syncPressed(wrap, x => S.fx[grp.id].includes(x.dataset.k));
+    const inp = $('.fx-text', wrap);
+    if (inp && grp.other) {
+      inp.hidden = !S.fx[grp.id].includes(OTHER);
+      if (k === OTHER && on) inp.focus();
+    }
+    saveSoon();
+  }
+  function onFixedInput(ev) {
+    if (!ev.target.classList.contains('fx-text')) return;
+    S.fxText[ev.target.closest('.fx-group').dataset.g] = ev.target.value;
+    saveSoon();
+  }
+  for (const id of ['#fxc-general', '#fxc-abc']) {
+    $(id).addEventListener('click', onFixedClick);
+    $(id).addEventListener('input', onFixedInput);
+  }
+
   /* ---------- step 2: vitals ---------- */
   function isOdd(k, raw) {
     const s = String(raw || '').trim();
@@ -1307,6 +1550,7 @@ select.field { padding-block: 8px; }
       const head = h('div', { class: 'vset-head' },
         h('span', { class: 'vset-title', text: i === 0 ? 'מדדים ראשונים' : 'מדדים חוזרים' }),
         h('span', { class: 'vtime' }, h('label', { for: timeId, text: 'שעה' }), time),
+        i > 0 ? chip('במהלך הפינוי', !!v.transit, { transit: String(i) }) : null,
         i > 0 ? h('button', { type: 'button', class: 'link quiet', 'data-rm': i, text: 'הסרה' }) : null);
       const grid = h('div', { class: 'vitals' });
       for (const f of VITALS) grid.append(vitalCell(f, v, i));
@@ -1329,9 +1573,18 @@ select.field { padding-block: 8px; }
     saveSoon();
   });
   $('#vitalsSets').addEventListener('click', (ev) => {
-    const b = ev.target.closest('[data-rm]');
-    if (!b) return;
-    S.vitals.splice(Number(b.dataset.rm), 1);
+    const tr = ev.target.closest('[data-transit]');
+    if (tr) {
+      const v = S.vitals[Number(tr.dataset.transit)];
+      if (!v) return;
+      v.transit = !v.transit;
+      tr.setAttribute('aria-pressed', v.transit ? 'true' : 'false');
+      saveSoon();
+      return;
+    }
+    const rm = ev.target.closest('[data-rm]');
+    if (!rm) return;
+    S.vitals.splice(Number(rm.dataset.rm), 1);
     renderVitals(); saveSoon();
   });
   $('#addVitals').addEventListener('click', () => {
@@ -1342,43 +1595,46 @@ select.field { padding-block: 8px; }
     if (first) first.focus();
   });
 
-  /* ---------- step 2: disposition and notes ---------- */
+  /* ---------- step 2: what happened next ---------- */
   function buildDispo() {
     const d = $('#dispoChips');
     d.textContent = '';
     for (const x of DISPO) d.append(chip(g(x), false, { dispo: x.k }));
-    d.append(chip('אחר…', false, { dispo: 'other' }));
+    d.append(chip('אחר…', false, { dispo: OTHER }));
+    const t = $('#transportChips');
+    t.textContent = '';
+    for (const x of TRANSPORT) t.append(chip(g(x), false, { transport: x.k }));
     const r = $('#refusalChips');
     r.textContent = '';
     for (const x of REFUSAL) r.append(chip(g(x), false, { refusal: x.k }));
-    const e = $('#endChips');
-    e.textContent = '';
-    for (const x of ENDSTATE) e.append(chip(g(x), false, { end: x.k }));
     $('#dest').value = S.dest;
+    $('#transportNote').value = S.transportNote;
     $('#dispoOther').value = S.dispoOther;
     syncDispo();
   }
   function syncDispo() {
     syncPressed($('#dispoChips'), b => S.dispo.includes(b.dataset.dispo));
+    syncPressed($('#transportChips'), b => S.transport.includes(b.dataset.transport));
     syncPressed($('#refusalChips'), b => S.refusal.includes(b.dataset.refusal));
-    syncPressed($('#endChips'), b => S.endState === b.dataset.end);
-    $('#destWrap').hidden = !S.dispo.includes('hospital');
-    $('#dispoOther').hidden = !S.dispo.includes('other');
+    $('#evacWrap').hidden = !S.dispo.includes('evac');
+    $('#dispoOther').hidden = !S.dispo.includes(OTHER);
     $('#refusalWrap').hidden = !S.dispo.includes('refused');
   }
   $('#sec-dispo').addEventListener('click', (ev) => {
     const b = ev.target.closest('.chip');
     if (!b) return;
-    const { dispo, refusal, end } = b.dataset;
+    const { dispo, transport, refusal } = b.dataset;
     if (dispo) S.dispo = toggleIn(S.dispo, dispo);
+    else if (transport) S.transport = toggleIn(S.transport, transport);
     else if (refusal) S.refusal = toggleIn(S.refusal, refusal);
-    else if (end) S.endState = S.endState === end ? '' : end;
     syncDispo();
-    if (dispo === 'other' && S.dispo.includes('other')) $('#dispoOther').focus();
+    if (dispo === OTHER && S.dispo.includes(OTHER)) $('#dispoOther').focus();
     saveSoon();
   });
-  $('#dest').addEventListener('input', (ev) => { S.dest = ev.target.value; saveSoon(); });
-  $('#dispoOther').addEventListener('input', (ev) => { S.dispoOther = ev.target.value; saveSoon(); });
+  const bindText = (id, key) => $('#' + id).addEventListener('input', (ev) => { S[key] = ev.target.value; saveSoon(); });
+  bindText('dest', 'dest');
+  bindText('transportNote', 'transportNote');
+  bindText('dispoOther', 'dispoOther');
   $('#notes').addEventListener('input', (ev) => { S.notes = ev.target.value; autogrow(ev.target); saveSoon(); });
   $('#toReport').addEventListener('click', () => { if (qCtl) stopQuestions(); goStep(3); });
 
@@ -1430,11 +1686,12 @@ select.field { padding-block: 8px; }
     rCtl = ctl;
     const head = firstLine();
     const sig = reportSig();
+    const style = S.style;
     setRBusy(true); rStatus('loading');
     try {
       const text = await callAI(buildReportPrompt(), { signal: ctl.signal });
       if (rCtl !== ctl) return;
-      S.report = composeReport(head, text);
+      S.report = composeReport(head, text, style);
       S.reportSig = sig;
       S.reportSource = 'ai';
       S.reportEdited = false;
@@ -1458,9 +1715,16 @@ select.field { padding-block: 8px; }
     generateReport();
   }
   function missingItems() {
-    const m = S.questions.filter(q => !isAnswered(q)).map(q => ({ label: q.q, target: 'q-' + q.id }));
-    if (!S.vitals.some(v => vitalsText(v))) m.push({ label: 'מדדים', target: 'sec-vitals' });
-    if (!S.dispo.length) m.push({ label: 'סיום האירוע', target: 'sec-dispo' });
+    const m = [];
+    const add = (label, target) => m.push({ label, target });
+    for (const q of S.questions) if (!isAnswered(q)) add(q.q, 'q-' + q.id);
+    for (const grp of Object.values(FIXED).flat()) if (grp.required && !fxValues(grp).length) add(grp.required, 'fx-' + grp.id);
+    if (!S.vitals.some(v => vitalsText(v))) add('מדדים', 'sec-vitals');
+    if (!S.dispo.length) add('המשך טיפול ופינוי', 'sec-dispo');
+    if (S.dispo.includes('evac')) {
+      if (!S.transport.includes('ok') && !S.transportNote.trim()) add('מהלך הפינוי', 'evacWrap');
+      if (!S.vitals.slice(1).some(v => vitalsText(v))) add('מדדים חוזרים', 'sec-vitals');
+    }
     return m;
   }
   function renderMissing() {
@@ -1500,7 +1764,7 @@ select.field { padding-block: 8px; }
     if (!b || b.dataset.style === S.style) return;
     if (S.reportEdited && S.report && Date.now() - styleTapAt > 4000) {
       styleTapAt = Date.now();
-      toast('הטקסט נערך ידנית. לחיצה נוספת תנסח אותו מחדש בסגנון הזה.', 4000);
+      toast('הטקסט נערך ידנית. לחיצה נוספת תנסח אותו מחדש בצורה הזאת.', 4000);
       return;
     }
     styleTapAt = 0;
@@ -1512,14 +1776,7 @@ select.field { padding-block: 8px; }
     const b = ev.target.closest('[data-target]');
     if (!b) return;
     goStep(2);
-    const t = document.getElementById(b.dataset.target);
-    if (!t) return;
-    t.scrollIntoView({ block: 'center' });
-    t.classList.remove('flash');
-    void t.offsetWidth;
-    t.classList.add('flash');
-    const f = t.querySelector('button, input, textarea');
-    if (f) f.focus({ preventScroll: true });
+    flashTarget(b.dataset.target);
   });
   $('#copyBtn').addEventListener('click', () => {
     const ta = $('#report');
@@ -1650,10 +1907,11 @@ select.field { padding-block: 8px; }
   $('#aiChip').addEventListener('click', openSettings);
 
   /* ---------- new case ---------- */
-  const caseIsEmpty = () => !S.sex && !S.age && !S.story.trim() && !S.bg.length && !S.bgExtra.trim() && !S.questions.length && !S.report;
+  const caseIsEmpty = () => !S.sex && !S.age && !S.reported.trim() && !S.observed.trim() && !S.bg.length && !S.bgExtra.trim() && !S.questions.length && !S.report;
   function renderAll() {
     renderStep1();
     renderQuestions(false);
+    renderFixed();
     renderVitals();
     buildDispo();
     $('#notes').value = S.notes;
